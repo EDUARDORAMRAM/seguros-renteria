@@ -1,24 +1,12 @@
-<footer class="bg-gradient-to-r from-[#1a2c5b] via-[#2d5a8c] to-[#4fa3c7] text-white mt-auto">
+<footer class="bg-gradient-to-r from-[#1a2c5b] via-[#2d5a8c] to-[#4fa3c7] text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             
-            {{-- Logo y Nombre --}}
-            <div class="flex items-center justify-center md:justify-start space-x-4">
-                <svg class="h-20 w-20 text-gray-400 opacity-50" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10C40 10 35 15 35 25C35 35 40 40 50 40C60 40 65 35 65 25C65 15 60 10 50 10Z" 
-                          stroke="currentColor" stroke-width="3" fill="none"/>
-                    <circle cx="50" cy="25" r="6" fill="currentColor"/>
-                    <path d="M50 40V90" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                    <path d="M30 70C30 70 35 60 50 60C65 60 70 70 70 70" 
-                          stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <path d="M20 75L35 65M80 75L65 65" 
-                          stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                    <ellipse cx="50" cy="88" rx="25" ry="5" fill="currentColor" opacity="0.3"/>
-                </svg>
-                <div>
-                    <div class="text-3xl md:text-4xl font-bold tracking-tight text-white">RENTERIA</div>
-                    <div class="text-xl md:text-2xl font-semibold -mt-1 text-white">SEGUROS</div>
-                </div>
+            {{-- Logo centrado y más grande (sin textos RENTERIA/SEGUROS) --}}
+            <div class="flex items-center justify-center md:justify-center">
+                <img src="{{ asset('images/logo.png') }}" 
+                     alt="Rentería Seguros" 
+                     class="h-24 w-auto">
             </div>
 
             {{-- Información de Contacto --}}
@@ -66,8 +54,8 @@
             </div>
         </div>
 
-        {{-- Línea divisoria --}}
-        <div class="border-t border-white border-opacity-30 mt-8 pt-6 text-center">
+        {{-- Copyright (sin línea divisoria arriba) --}}
+        <div class="mt-8 pt-6 text-center">
             <p class="text-sm text-white">
                 &copy; {{ date('Y') }} Rentería Seguros. Todos los derechos reservados.
             </p>
@@ -76,4 +64,3 @@
             </p>
         </div>
     </div>
-</footer>

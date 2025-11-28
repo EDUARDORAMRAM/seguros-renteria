@@ -28,7 +28,7 @@
     </main>
 
     {{-- Footer FUERA del main y con color visible --}}
-    <footer class="sm:ml-64 bg-gray-800 text-white py-6">
+    <footer class="sm:ml-64">
         <x-footer />
     </footer>
 

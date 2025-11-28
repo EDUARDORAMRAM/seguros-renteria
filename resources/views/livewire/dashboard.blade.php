@@ -227,7 +227,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($this->polizasProximasVencer as $poliza)
                                     @php
-                                        $dias = $poliza->dias_para_vencer;
+                                        $dias = (int)$poliza->dias_para_vencer;
                                         $urgencia = $dias <= 7 ? 'critico' : ($dias <= 15 ? 'urgente' : 'proximo');
                                         $badgeClass = [
                                             'critico' => 'bg-red-100 text-red-800 border-2 border-red-300 animate-pulse',

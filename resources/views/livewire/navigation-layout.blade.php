@@ -16,7 +16,7 @@
         {{-- Header del Sidebar con Logo --}}
         <div class="border-b border-gray-200 p-4 flex items-center justify-between">
             <a href="{{ route('dashboard') }}" class="flex items-center space-x-2">
-                 <img src="{{ asset('images/logo.png') }}" 
+                 <img src="{{ asset('images/logoColor.png') }}" 
              alt="Logo Sistema de Seguros" 
              class="h-15 w-auto"> <!-- h-8 w-auto mantiene la proporción -->
                 

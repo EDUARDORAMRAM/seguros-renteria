@@ -3,8 +3,8 @@
     <div class="mb-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Nueva Póliza</h2>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <h2 class="text-2xl font-bold text-gray-900">Nueva Póliza</h2>
+                <p class="mt-1 text-sm text-gray-600">
                     Complete el formulario para crear una nueva póliza
                 </p>
             </div>
@@ -17,23 +17,23 @@
 
     {{-- Formulario --}}
     <form wire:submit.prevent="guardar">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+        <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
             
             {{-- Sección: Información de la Póliza --}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
                     📋 Información de la Póliza
                 </h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {{-- Número de Póliza --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Número de Póliza <span class="text-red-500">*</span>
                         </label>
                         <input type="text" 
                                wire:model="NumPoliza" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                placeholder="POL-000001">
                         @error('NumPoliza') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -42,11 +42,11 @@
 
                     {{-- Forma de Pago --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Forma de Pago <span class="text-red-500">*</span>
                         </label>
                         <select wire:model="FormaPago" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                             <option value="Anual">Anual</option>
                             <option value="Semestral">Semestral</option>
                             <option value="Mensual">Mensual</option>
@@ -58,12 +58,12 @@
 
                     {{-- Fecha de Inicio --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Fecha de Inicio <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
                                wire:model="FechaInicio" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         @error('FechaInicio') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -71,12 +71,12 @@
 
                     {{-- Fecha de Vencimiento --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Fecha de Vencimiento <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
                                wire:model="FechaVencimiento" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         @error('FechaVencimiento') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -84,7 +84,7 @@
 
                     {{-- Prima --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Prima <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -93,7 +93,7 @@
                                    wire:model="Prima" 
                                    step="0.01"
                                    min="0"
-                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                    placeholder="0.00">
                         </div>
                         @error('Prima') 
@@ -103,11 +103,11 @@
 
                     {{-- Estatus --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Estatus <span class="text-red-500">*</span>
                         </label>
                         <select wire:model="Estatus" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                             <option value="Activa">Activa</option>
                             <option value="Vencida">Vencida</option>
                             <option value="Cancelada">Cancelada</option>
@@ -121,16 +121,16 @@
 
             {{-- Sección: Compañía Aseguradora --}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
                     🏢 Compañía Aseguradora
                 </h3>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Seleccionar Compañía <span class="text-red-500">*</span>
                     </label>
                     <select wire:model="IdCompania" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         <option value="">Seleccione una compañía...</option>
                         @foreach($companias as $compania)
                             <option value="{{ $compania->IdCompania }}">
@@ -146,17 +146,17 @@
 
             {{-- Sección: Asegurado --}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
                     👤 Asegurado
                 </h3>
                 
                 <div class="flex gap-2">
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Seleccionar Asegurado <span class="text-red-500">*</span>
                         </label>
                         <select wire:model="IdAsegurado" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                             <option value="">Seleccione un asegurado...</option>
                             @foreach($asegurados as $asegurado)
                                 <option value="{{ $asegurado->IdAsegurado }}">
@@ -180,17 +180,17 @@
 
             {{-- Sección: Unidad --}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
                     🚗 Unidad Asegurada
                 </h3>
                 
                 <div class="flex gap-2">
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Seleccionar Unidad <span class="text-red-500">*</span>
                         </label>
                         <select wire:model="IdUnidad" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                             <option value="">Seleccione una unidad...</option>
                             @foreach($unidades as $unidad)
                                 <option value="{{ $unidad->IdUnidad }}">
@@ -219,7 +219,7 @@
                     Cancelar
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center gap-2">
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -231,12 +231,12 @@
 
     {{-- Loading Indicator --}}
     <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center gap-3">
-            <svg class="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <div class="bg-white rounded-lg p-6 flex items-center gap-3">
+            <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span class="text-gray-900 dark:text-white font-medium">Guardando...</span>
+            <span class="text-gray-900 font-medium">Guardando...</span>
         </div>
     </div>
 </div>

@@ -42,7 +42,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
                 <input type="text" 
-                       wire:model.debounce.500ms="busqueda" 
+                       wire:model.live.debounce.500ms="busqueda" 
                        placeholder="Buscar por nombre, RFC, email o teléfono..."
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
@@ -50,7 +50,7 @@
             {{-- Items por página --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Mostrar</label>
-                <select wire:model="porPagina" 
+                <select wire:model.live="porPagina" 
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                     <option value="10">10 por página</option>
                     <option value="25">25 por página</option>
@@ -173,7 +173,7 @@
                                         </svg>
                                     </a>
                                     <button wire:click="eliminar({{ $asegurado->IdAsegurado }})" 
-                                            onclick="return confirm('¿Estás seguro de eliminar este asegurado?')"
+                                            wire:confirm="¿Estás seguro de eliminar este asegurado? Esta acción no se puede deshacer."
                                             class="text-red-600 hover:text-red-900" title="Eliminar">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
