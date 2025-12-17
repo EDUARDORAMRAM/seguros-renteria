@@ -45,11 +45,12 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Forma de Pago <span class="text-red-500">*</span>
                         </label>
-                        <select wire:model="FormaPago" 
+                        <select wire:model.live="FormaPago" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                            <option value="Anual">Anual</option>
-                            <option value="Semestral">Semestral</option>
                             <option value="Mensual">Mensual</option>
+                            <option value="Trimestral">Trimestral</option>
+                            <option value="Semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
                         </select>
                         @error('FormaPago') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -62,7 +63,7 @@
                             Fecha de Inicio <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
-                               wire:model="FechaInicio" 
+                               wire:model.live="FechaInicio" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         @error('FechaInicio') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -75,7 +76,7 @@
                             Fecha de Vencimiento <span class="text-red-500">*</span>
                         </label>
                         <input type="date" 
-                               wire:model="FechaVencimiento" 
+                               wire:model.live="FechaVencimiento" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         @error('FechaVencimiento') 
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -85,7 +86,7 @@
                     {{-- Prima --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Prima <span class="text-red-500">*</span>
+                            Prima Total <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
@@ -118,6 +119,53 @@
                     </div>
                 </div>
             </div>
+
+            {{-- NUEVO: Validación y Preview de Fechas de Cobranza --}}
+            @if($validacionFechas)
+                <div class="p-4 rounded-lg border-2 {{ $validacionFechas['valido'] ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300' }}">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            @if($validacionFechas['valido'])
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            @else
+                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            @endif
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-bold {{ $validacionFechas['valido'] ? 'text-green-800' : 'text-red-800' }}">
+                                {{ $validacionFechas['mensaje'] }}
+                            </h3>
+                            
+                            @if($validacionFechas['valido'] && count($fechasCobranzaPreview) > 0)
+                                <div class="mt-3">
+                                    <p class="text-xs font-semibold text-gray-700 mb-2">
+                                        📅 Fechas de cobranza que se generarán ({{ count($fechasCobranzaPreview) }} pagos):
+                                    </p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        @foreach($fechasCobranzaPreview as $index => $fecha)
+                                            <div class="bg-white px-3 py-2 rounded-lg border border-green-200 text-center">
+                                                <span class="text-xs font-bold text-green-700">Pago {{ $index + 1 }}</span>
+                                                <p class="text-sm font-semibold text-gray-900">
+                                                    {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}
+                                                </p>
+                                                @if($Prima > 0)
+                                                    <p class="text-xs text-gray-600">
+                                                        ${{ number_format($Prima / count($fechasCobranzaPreview), 2) }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- Sección: Compañía Aseguradora --}}
             <div>
@@ -194,7 +242,7 @@
                             <option value="">Seleccione una unidad...</option>
                             @foreach($unidades as $unidad)
                                 <option value="{{ $unidad->IdUnidad }}">
-                                    {{ $unidad->descripcion_completa }} - {{ $unidad->Placas }}
+                                    {{ $unidad->descripcion_completa }} - {{ $unidad->VIN }}
                                 </option>
                             @endforeach
                         </select>
@@ -212,6 +260,63 @@
                 </div>
             </div>
 
+            {{-- Documento PDF (Opcional) --}}
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
+                    📎 Documento de Póliza (Opcional)
+                </h3>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Adjuntar PDF de la Póliza
+                    </label>
+                    <input type="file" 
+                           wire:model="archivoPdf"
+                           accept=".pdf"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    @error('archivoPdf') 
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    
+                    {{-- Indicador de carga --}}
+                    <div wire:loading wire:target="archivoPdf" class="mt-2">
+                        <div class="flex items-center text-green-600 text-sm">
+                            <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Cargando archivo...
+                        </div>
+                    </div>
+                    
+                    {{-- Preview --}}
+                    @if ($archivoPdf)
+                        <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-sm text-green-800">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="font-medium">{{ $archivoPdf->getClientOriginalName() }}</span>
+                                    <span class="ml-2 text-gray-600">({{ number_format($archivoPdf->getSize() / 1024, 2) }} KB)</span>
+                                </div>
+                                <button type="button" 
+                                        wire:click="$set('archivoPdf', null)"
+                                        class="text-red-600 hover:text-red-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <p class="mt-2 text-xs text-gray-500">
+                        Formato PDF, máximo 10MB. Puede agregarlo después si lo prefiere.
+                    </p>
+                </div>
+            </div>
+
             {{-- Botones de Acción --}}
             <div class="flex items-center justify-end gap-4 pt-6 border-t">
                 <a href="{{ route('polizas.index') }}" 
@@ -219,7 +324,8 @@
                     Cancelar
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition flex items-center gap-2">
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition flex items-center gap-2"
+                        @if($validacionFechas && !$validacionFechas['valido']) disabled @endif>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -230,13 +336,13 @@
     </form>
 
     {{-- Loading Indicator --}}
-    <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div wire:loading wire:target="guardar" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 flex items-center gap-3">
             <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span class="text-gray-900 font-medium">Guardando...</span>
+            <span class="text-gray-900 font-medium">Guardando póliza y generando fechas de cobranza...</span>
         </div>
     </div>
 </div>

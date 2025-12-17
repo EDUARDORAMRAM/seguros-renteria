@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-public function up(): void
-{
-    Schema::create('companias', function (Blueprint $table) {
-        $table->id('IdCompania');
-        $table->string('Nombre');
-        $table->string('Cobertura');
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('companias', function (Blueprint $table) {
+            $table->id('IdCompania');
+            $table->string('Nombre'); // Puede repetirse
+            $table->string('Cobertura'); // Puede repetirse
+            $table->timestamps();
 
+            // ═══════════════════════════════════════════════════════════
+            // ÍNDICE ÚNICO COMPUESTO: No se puede repetir Nombre + Cobertura
+            // ═══════════════════════════════════════════════════════════
+            $table->unique(['Nombre', 'Cobertura'], 'unique_nombre_cobertura');
+        });
+    }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('companias');

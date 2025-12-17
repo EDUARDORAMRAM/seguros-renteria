@@ -17,9 +17,10 @@ public function up(): void
         $table->string('FormaPago');
         $table->date('FechaInicio');
         $table->date('FechaVencimiento');
+        $table->date('FechaCobranza')->nullable(); 
         $table->decimal('Prima', 10, 2);
         $table->string('Estatus');
-
+        $table->string('ArchivoPDF')->nullable();
         // Llaves foráneas
         $table->unsignedBigInteger('IdCompania');
         $table->unsignedBigInteger('IdUnidad');

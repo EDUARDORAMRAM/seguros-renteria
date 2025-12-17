@@ -6,6 +6,7 @@ use App\Models\Poliza;
 use App\Models\Asegurado;
 use App\Models\Compania;
 use App\Models\Unidad;
+use App\Models\FechaCobranza; // ← AGREGAR
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -26,6 +27,12 @@ class Dashboard extends Component
             'polizas_activas' => Poliza::activas()->count(),
             'polizas_vencidas' => Poliza::vencidas()->count(),
             'proximas_vencer' => Poliza::proximasAVencer(30)->count(),
+            
+            // ═══════════════════════════════════════════════════════════
+            // CORREGIDO: Ahora cuenta FechasCobranza en lugar de Polizas
+            // ═══════════════════════════════════════════════════════════
+            'proximas_cobrar' => FechaCobranza::proximas(7)->count(),
+            
             'total_asegurados' => Asegurado::count(),
             'total_companias' => Compania::count(),
             'total_unidades' => Unidad::count(),
@@ -43,6 +50,39 @@ class Dashboard extends Component
             ->orderBy('FechaVencimiento', 'asc')
             ->get();
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // CORREGIDO: Obtener FECHAS DE COBRANZA próximas (no pólizas)
+    // ═══════════════════════════════════════════════════════════
+    public function getPolizasProximasCobrarProperty()
+{
+    // Obtener las fechas de cobranza próximas (7 días)
+    $fechasCobranza = FechaCobranza::with([
+        'poliza.asegurado', 
+        'poliza.compania', 
+        'poliza.unidad'
+    ])
+    ->proximas(7)
+    ->get();
+
+    // Agrupar por póliza para evitar duplicados en la tabla
+    return $fechasCobranza->groupBy('IdPoliza')->map(function ($grupo) {
+        $fechaMasProxima = $grupo->sortBy('FechaCobranza')->first();
+        $poliza = $fechaMasProxima->poliza;
+        
+        // ═══════════════════════════════════════════════════════════
+        // CRÍTICO: Calcular días manualmente para evitar conflicto con accessor
+        // ═══════════════════════════════════════════════════════════
+        $diasRestantes = (int) now()->diffInDays($fechaMasProxima->FechaCobranza, false);
+        
+        // Agregar datos de la cobranza a la póliza
+        $poliza->proxima_fecha_cobranza = $fechaMasProxima->FechaCobranza;
+        $poliza->proximo_monto_cobro = $fechaMasProxima->MontoCobro;
+        $poliza->dias_para_cobrar_real = $diasRestantes; // ← NOMBRE DIFERENTE
+        
+        return $poliza;
+    })->values();
+}
 
     public function getPolizasRecientesProperty()
     {
@@ -76,6 +116,5 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.dashboard');
-        
     }
 }

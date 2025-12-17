@@ -43,7 +43,7 @@
                                 Nombre de la Compañía <span class="text-red-500">*</span>
                             </label>
                             <input type="text" 
-                                   wire:model.blur="nombre"
+                                   wire:model.live.debounce.500ms="nombre"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                    placeholder="Ej: AXA Seguros, GNP, Qualitas, etc.">
                             @error('nombre')
@@ -52,6 +52,22 @@
                             <p class="mt-1 text-xs text-gray-500">
                                 Ingresa el nombre oficial de la compañía aseguradora
                             </p>
+
+                            {{-- NUEVO: Sugerencias de nombres existentes --}}
+                            @if(count($nombresExistentes) > 0)
+                                <div class="mt-2">
+                                    <p class="text-xs font-semibold text-gray-600 mb-1">Nombres registrados:</p>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($nombresExistentes as $nombreExistente)
+                                            <button type="button"
+                                                    wire:click="$set('nombre', '{{ $nombreExistente }}')"
+                                                    class="px-2 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded border border-blue-200 transition">
+                                                {{ $nombreExistente }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Cobertura --}}
@@ -60,7 +76,7 @@
                                 Cobertura <span class="text-red-500">*</span>
                             </label>
                             <input type="text" 
-                                   wire:model.blur="cobertura"
+                                   wire:model.live.debounce.500ms="cobertura"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                    placeholder="Ej: Amplia, Limitada, Responsabilidad Civil">
                             @error('cobertura')
@@ -69,6 +85,25 @@
                             <p class="mt-1 text-xs text-gray-500">
                                 Tipo de cobertura que ofrece esta compañía
                             </p>
+
+                            {{-- NUEVO: Mostrar coberturas existentes si el nombre ya está registrado --}}
+                            @if($mostrarSugerencias && count($coberturasExistentes) > 0)
+                                <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-xs font-semibold text-yellow-800 mb-2">
+                                        ⚠️ "{{ $nombre }}" ya tiene estas coberturas registradas:
+                                    </p>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($coberturasExistentes as $coberturaExistente)
+                                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded border border-yellow-300">
+                                                {{ $coberturaExistente }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    <p class="text-xs text-yellow-700 mt-2">
+                                        💡 Puedes agregar una nueva cobertura diferente para esta compañía
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -83,10 +118,12 @@
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-green-800">
-                                Información
+                                Información Importante
                             </h3>
-                            <div class="mt-2 text-sm text-green-700">
-                                <p>Una vez creada la compañía, podrás asociarle pólizas en el módulo correspondiente.</p>
+                            <div class="mt-2 text-sm text-green-700 space-y-1">
+                                <p>✅ <strong>Puedes usar el mismo nombre</strong> con diferentes coberturas</p>
+                                <p>✅ Ejemplo: "AXA Seguros - Premium" y "AXA Seguros - Limitada"</p>
+                                <p>❌ <strong>No puedes duplicar</strong> el mismo nombre y cobertura</p>
                             </div>
                         </div>
                     </div>
@@ -114,19 +151,25 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Ayuda Rápida</h3>
             <div class="space-y-3 text-sm text-gray-600">
                 <div class="flex items-start">
-                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
-                    <p><strong>Nombre:</strong> Debe ser único en el sistema. Usa el nombre oficial de la aseguradora.</p>
+                    <p><strong>Nombre:</strong> Puede repetirse con diferentes coberturas. Usa el nombre oficial de la aseguradora.</p>
                 </div>
                 <div class="flex items-start">
-                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
-                    <p><strong>Cobertura:</strong> Indica el tipo principal de cobertura (Amplia, Limitada, RC, etc.).</p>
+                    <p><strong>Cobertura:</strong> Define el tipo de protección (Amplia Plus, Limitada, RC Profesional, etc.).</p>
                 </div>
                 <div class="flex items-start">
-                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <p><strong>Validación:</strong> No se puede repetir la combinación exacta de Nombre + Cobertura.</p>
+                </div>
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
                     <p>Los campos marcados con <span class="text-red-500">*</span> son obligatorios.</p>
@@ -135,7 +178,7 @@
         </div>
 
         {{-- Loading Indicator --}}
-        <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div wire:loading wire:target="guardar" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg p-6 flex items-center gap-3">
                 <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

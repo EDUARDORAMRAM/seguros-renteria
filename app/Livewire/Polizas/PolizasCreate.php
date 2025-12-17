@@ -2,15 +2,17 @@
 
 namespace App\Livewire\Polizas;
 
-use App\Models\Poliza;
-use App\Models\Asegurado;
-use App\Models\Compania;
-use App\Models\Unidad;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use App\Models\Poliza;
+use App\Models\Compania;
+use App\Models\Asegurado;
+use App\Models\Unidad;
 
 class PolizasCreate extends Component
 {
-    // Campos del formulario
+    use WithFileUploads;
+
     public $NumPoliza;
     public $FormaPago = 'Anual';
     public $FechaInicio;
@@ -20,20 +22,22 @@ class PolizasCreate extends Component
     public $IdCompania;
     public $IdAsegurado;
     public $IdUnidad;
+    public $archivoPdf;
 
-    // Datos para los selects
+    // NUEVOS
+    public $validacionFechas = null;
+    public $fechasCobranzaPreview = [];
+
     public $companias;
     public $asegurados;
     public $unidades;
 
-    // Modales
     public $mostrarModalAsegurado = false;
     public $mostrarModalUnidad = false;
 
-    // Reglas de validación
     protected $rules = [
         'NumPoliza' => 'required|unique:polizas,NumPoliza',
-        'FormaPago' => 'required|in:Anual,Semestral,Mensual',
+        'FormaPago' => 'required|in:Anual,Semestral,Trimestral,Mensual',
         'FechaInicio' => 'required|date',
         'FechaVencimiento' => 'required|date|after:FechaInicio',
         'Prima' => 'required|numeric|min:0',
@@ -41,6 +45,7 @@ class PolizasCreate extends Component
         'IdCompania' => 'required|exists:companias,IdCompania',
         'IdAsegurado' => 'required|exists:asegurados,IdAsegurado',
         'IdUnidad' => 'required|exists:unidads,IdUnidad',
+        'archivoPdf' => 'nullable|file|mimes:pdf|max:10240',
     ];
 
     protected $messages = [
@@ -57,6 +62,7 @@ class PolizasCreate extends Component
         $this->FechaVencimiento = now()->addYear()->format('Y-m-d');
         $this->generarNumeroPoliza();
         $this->cargarDatos();
+        $this->validarYCalcularFechas();
     }
 
     public function cargarDatos()
@@ -73,29 +79,63 @@ class PolizasCreate extends Component
         $this->NumPoliza = 'POL-' . str_pad($numero, 6, '0', STR_PAD_LEFT);
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // NUEVO: Validar y calcular fechas en tiempo real
+    // ═══════════════════════════════════════════════════════════
     public function updatedFormaPago($value)
     {
-        // Calcular fecha de vencimiento según forma de pago
-        if ($this->FechaInicio) {
-            $fechaInicio = \Carbon\Carbon::parse($this->FechaInicio);
-            $this->FechaVencimiento = match($value) {
-                'Anual' => $fechaInicio->copy()->addYear()->format('Y-m-d'),
-                'Semestral' => $fechaInicio->copy()->addMonths(6)->format('Y-m-d'),
-                'Mensual' => $fechaInicio->copy()->addMonth()->format('Y-m-d'),
-                default => $fechaInicio->copy()->addYear()->format('Y-m-d'),
-            };
+        $this->validarYCalcularFechas();
+    }
+
+    public function updatedFechaInicio($value)
+    {
+        $this->validarYCalcularFechas();
+    }
+
+    public function updatedFechaVencimiento($value)
+    {
+        $this->validarYCalcularFechas();
+    }
+
+    private function validarYCalcularFechas()
+    {
+        if ($this->FechaInicio && $this->FechaVencimiento && $this->FormaPago) {
+            // Validar coherencia
+            $this->validacionFechas = Poliza::validarCoherenciaFechas(
+                $this->FechaInicio,
+                $this->FechaVencimiento,
+                $this->FormaPago
+            );
+
+            // Calcular preview de fechas
+            if ($this->validacionFechas['valido']) {
+                $this->fechasCobranzaPreview = Poliza::calcularFechasCobranza(
+                    $this->FechaInicio,
+                    $this->FechaVencimiento,
+                    $this->FormaPago
+                );
+            } else {
+                $this->fechasCobranzaPreview = [];
+            }
         }
     }
 
     public function guardar()
     {
+        // Validar coherencia antes de guardar
+        if (!$this->validacionFechas || !$this->validacionFechas['valido']) {
+            $this->addError('FechaVencimiento', $this->validacionFechas['mensaje'] ?? 'Las fechas no son coherentes con la forma de pago');
+            return;
+        }
+
         $this->validate();
 
-        Poliza::create([
+        $poliza = Poliza::create([
             'NumPoliza' => $this->NumPoliza,
             'FormaPago' => $this->FormaPago,
             'FechaInicio' => $this->FechaInicio,
             'FechaVencimiento' => $this->FechaVencimiento,
+            'FechaCobranza' => null, // Ya no se usa
             'Prima' => $this->Prima,
             'Estatus' => $this->Estatus,
             'IdCompania' => $this->IdCompania,
@@ -103,7 +143,20 @@ class PolizasCreate extends Component
             'IdUnidad' => $this->IdUnidad,
         ]);
 
-        session()->flash('message', 'Póliza creada exitosamente.');
+        // Guardar PDF si existe
+        if ($this->archivoPdf) {
+            $nombreArchivo = 'poliza_' . str_replace(['/', '-', ' '], '_', $this->NumPoliza) . '_' . time() . '.pdf';
+            $this->archivoPdf->storeAs('polizas', $nombreArchivo, 'public');
+            $poliza->ArchivoPDF = $nombreArchivo;
+            $poliza->save();
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // GENERAR FECHAS DE COBRANZA
+        // ═══════════════════════════════════════════════════════════
+        $poliza->generarFechasCobranza();
+
+        session()->flash('message', 'Póliza creada exitosamente con ' . count($this->fechasCobranzaPreview) . ' fechas de cobranza.');
         
         return redirect()->route('polizas.index');
     }

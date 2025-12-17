@@ -11,7 +11,7 @@
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Editar Compañía</h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Actualiza la información de la compañía aseguradora
+                    Actualiza la información de: <strong>{{ $compania->nombre_completo }}</strong>
                 </p>
             </div>
         </div>
@@ -40,7 +40,7 @@
                             </label>
                             <input type="text" 
                                    id="nombre"
-                                   wire:model.blur="nombre"
+                                   wire:model.live.debounce.500ms="nombre"
                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nombre') border-red-500 @enderror"
                                    placeholder="Ej: AXA Seguros, GNP, Qualitas, etc.">
                             @error('nombre')
@@ -49,6 +49,15 @@
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 Ingresa el nombre oficial de la compañía aseguradora
                             </p>
+
+                            {{-- NUEVO: Mostrar si el nombre cambió --}}
+                            @if($nombre !== $nombreOriginal)
+                                <div class="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                                    <p class="text-xs text-blue-700 dark:text-blue-300">
+                                        📝 Cambiando de: <strong>{{ $nombreOriginal }}</strong> → <strong>{{ $nombre }}</strong>
+                                    </p>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Cobertura --}}
@@ -58,7 +67,7 @@
                             </label>
                             <input type="text" 
                                    id="cobertura"
-                                   wire:model.blur="cobertura"
+                                   wire:model.live.debounce.500ms="cobertura"
                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('cobertura') border-red-500 @enderror"
                                    placeholder="Ej: Amplia, Limitada, Responsabilidad Civil">
                             @error('cobertura')
@@ -67,6 +76,34 @@
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 Tipo de cobertura que ofrece esta compañía
                             </p>
+
+                            {{-- NUEVO: Alerta si el nombre ya tiene otras coberturas --}}
+                            @if($mostrarSugerencias && count($coberturasExistentes) > 0)
+                                <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                    <p class="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                                        ⚠️ "{{ $nombre }}" ya tiene estas coberturas registradas:
+                                    </p>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($coberturasExistentes as $coberturaExistente)
+                                            <span class="px-2 py-1 text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 rounded border border-yellow-300 dark:border-yellow-700">
+                                                {{ $coberturaExistente }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-2">
+                                        💡 Asegúrate de usar una cobertura diferente
+                                    </p>
+                                </div>
+                            @endif
+
+                            {{-- NUEVO: Mostrar si la cobertura cambió --}}
+                            @if($cobertura !== $coberturaOriginal)
+                                <div class="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                                    <p class="text-xs text-blue-700 dark:text-blue-300">
+                                        📝 Cambiando de: <strong>{{ $coberturaOriginal }}</strong> → <strong>{{ $cobertura }}</strong>
+                                    </p>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Información de registro --}}
@@ -165,7 +202,7 @@
                             Advertencia
                         </h3>
                         <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                            <p>Esta compañía tiene {{ $totalPolizas }} póliza(s) asociada(s). Los cambios afectarán la información relacionada.</p>
+                            <p>Esta compañía tiene {{ $totalPolizas }} póliza(s) asociada(s). Los cambios en nombre o cobertura se reflejarán en todas las pólizas.</p>
                         </div>
                     </div>
                 </div>
@@ -180,7 +217,13 @@
                         <svg class="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
-                        <p>El nombre debe ser único en el sistema.</p>
+                        <p><strong>Puedes usar el mismo nombre</strong> con diferentes coberturas</p>
+                    </div>
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <p><strong>No puedes duplicar</strong> la combinación exacta de Nombre + Cobertura</p>
                     </div>
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">

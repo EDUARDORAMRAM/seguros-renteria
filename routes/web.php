@@ -53,6 +53,8 @@ Route::middleware([
         Route::get('/comisiones', \App\Livewire\Reportes\ReporteComisiones::class)->name('comisiones');
     });
 
+    Route::get('/endosos/{id}', \App\Livewire\Endosos\EndosoShow::class)
+        ->name('endosos.show');
     // Configuración / Ajustes - Livewire Component
     Route::get('/configuracion', \App\Livewire\Configuracion\ConfiguracionIndex::class)->name('configuracion');
     
