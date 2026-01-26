@@ -37,7 +37,7 @@
 
     {{-- Filtros --}}
     <div class="mb-6 bg-white rounded-lg shadow p-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {{-- Búsqueda --}}
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
@@ -45,19 +45,6 @@
                        wire:model.live.debounce.500ms="busqueda" 
                        placeholder="Buscar por VIN, marca, submarca, placas o número de serie..."
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-            </div>
-
-            {{-- Filtro Tipo --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                <select wire:model.live="filtroTipo" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                    <option value="">Todos</option>
-                    <option value="Automóvil">Automóvil</option>
-                    <option value="Camioneta">Camioneta</option>
-                    <option value="Motocicleta">Motocicleta</option>
-                    <option value="Camión">Camión</option>
-                </select>
             </div>
 
             {{-- Filtro Uso --}}
@@ -103,7 +90,7 @@
                             VIN / Placas
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tipo / Uso
+                            Uso
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Pólizas
@@ -131,17 +118,16 @@
                                         {{ $unidad->Marca }} {{ $unidad->Submarca }}
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        Año: {{ $unidad->Anio }} | Color: {{ $unidad->Color }}
+                                        Año: {{ $unidad->Anio }}@if($unidad->Color) | Color: {{ $unidad->Color }}@endif
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900">{{ $unidad->VIN }}</div>
-                                <div class="text-xs text-gray-500">{{ $unidad->Placas }}</div>
+                                <div class="text-xs text-gray-500">{{ $unidad->Placas ?? 'Sin placas' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $unidad->TipoUnidad }}</div>
-                                <div class="text-xs text-gray-500">{{ $unidad->Uso }}</div>
+                                <div class="text-sm text-gray-900">{{ $unidad->Uso }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">

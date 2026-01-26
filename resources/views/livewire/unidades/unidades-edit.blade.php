@@ -74,35 +74,17 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                                {{-- Tipo de Unidad --}}
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Tipo de Unidad <span class="text-red-500">*</span>
-                                    </label>
-                                    <select wire:model="TipoUnidad" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                        <option value="">Seleccione un tipo</option>
-                                        <option value="Automóvil">Automóvil</option>
-                                        <option value="Camioneta">Camioneta</option>
-                                        <option value="Motocicleta">Motocicleta</option>
-                                        <option value="Camión">Camión</option>
-                                    </select>
-                                    @error('TipoUnidad') 
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                                 {{-- Color --}}
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Color <span class="text-red-500">*</span>
+                                        Color
                                     </label>
-                                    <input type="text" 
-                                           wire:model="Color" 
+                                    <input type="text"
+                                           wire:model="Color"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                            placeholder="Ej: Blanco, Negro, Gris">
-                                    @error('Color') 
+                                    @error('Color')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -181,14 +163,14 @@
                                 {{-- Placas --}}
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Placas <span class="text-red-500">*</span>
+                                        Placas
                                     </label>
-                                    <input type="text" 
-                                           wire:model="Placas" 
+                                    <input type="text"
+                                           wire:model="Placas"
                                            maxlength="20"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
                                            placeholder="Ej: ABC-123-D">
-                                    @error('Placas') 
+                                    @error('Placas')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>

@@ -14,7 +14,6 @@ class Unidad extends Model
 
     protected $fillable = [
         'VIN',
-        'TipoUnidad',
         'Marca',
         'Submarca',
         'Anio',

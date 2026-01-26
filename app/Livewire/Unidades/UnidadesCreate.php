@@ -8,7 +8,6 @@ use Livewire\Component;
 class UnidadesCreate extends Component
 {
     public $VIN = '';
-    public $TipoUnidad = '';
     public $Marca = '';
     public $Submarca = '';
     public $Anio = '';
@@ -22,14 +21,13 @@ class UnidadesCreate extends Component
     {
         return [
             'VIN' => 'required|string|max:50|unique:unidads,VIN',
-            'TipoUnidad' => 'required|string|in:Automóvil,Camioneta,Motocicleta,Camión',
             'Marca' => 'required|string|max:100',
             'Submarca' => 'required|string|max:100',
             'Anio' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'NoSerie' => 'required|string|max:50|unique:unidads,NoSerie',
             'Motor' => 'nullable|string|max:50',
-            'Placas' => 'required|string|max:20|unique:unidads,Placas',
-            'Color' => 'required|string|max:50',
+            'Placas' => 'nullable|string|max:20|unique:unidads,Placas',
+            'Color' => 'nullable|string|max:50',
             'Uso' => 'required|string|in:Particular,Comercial,Público',
         ];
     }
@@ -37,7 +35,6 @@ class UnidadesCreate extends Component
     protected $messages = [
         'VIN.required' => 'El VIN es obligatorio.',
         'VIN.unique' => 'Este VIN ya está registrado.',
-        'TipoUnidad.required' => 'El tipo de unidad es obligatorio.',
         'Marca.required' => 'La marca es obligatoria.',
         'Submarca.required' => 'La submarca es obligatoria.',
         'Anio.required' => 'El año es obligatorio.',
@@ -46,9 +43,7 @@ class UnidadesCreate extends Component
         'Anio.max' => 'El año no puede ser mayor al año próximo.',
         'NoSerie.required' => 'El número de serie es obligatorio.',
         'NoSerie.unique' => 'Este número de serie ya está registrado.',
-        'Placas.required' => 'Las placas son obligatorias.',
         'Placas.unique' => 'Estas placas ya están registradas.',
-        'Color.required' => 'El color es obligatorio.',
         'Uso.required' => 'El uso es obligatorio.',
     ];
 
@@ -64,13 +59,12 @@ class UnidadesCreate extends Component
         try {
             Unidad::create([
                 'VIN' => strtoupper($this->VIN),
-                'TipoUnidad' => $this->TipoUnidad,
                 'Marca' => $this->Marca,
                 'Submarca' => $this->Submarca,
                 'Anio' => $this->Anio,
                 'NoSerie' => strtoupper($this->NoSerie),
                 'Motor' => strtoupper($this->Motor),
-                'Placas' => strtoupper($this->Placas),
+                'Placas' => $this->Placas ? strtoupper($this->Placas) : null,
                 'Color' => $this->Color,
                 'Uso' => $this->Uso,
             ]);

@@ -52,11 +52,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Color</p>
-                            <p class="text-base font-medium text-gray-900">{{ $unidad->Color }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Tipo de Unidad</p>
-                            <p class="text-base font-medium text-gray-900">{{ $unidad->TipoUnidad }}</p>
+                            <p class="text-base font-medium text-gray-900">{{ $unidad->Color ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Uso</p>
@@ -85,7 +81,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Placas</p>
-                            <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->Placas }}</p>
+                            <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->Placas ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Motor</p>

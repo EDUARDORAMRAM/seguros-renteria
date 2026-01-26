@@ -11,7 +11,6 @@ class UnidadesList extends Component
     use WithPagination;
 
     public $busqueda = '';
-    public $filtroTipo = '';
     public $filtroUso = '';
     public $porPagina = 10;
     public $ordenarPor = 'created_at';
@@ -19,7 +18,6 @@ class UnidadesList extends Component
 
     protected $queryString = [
         'busqueda' => ['except' => ''],
-        'filtroTipo' => ['except' => ''],
         'filtroUso' => ['except' => ''],
         'porPagina' => ['except' => 10],
     ];
@@ -31,11 +29,6 @@ class UnidadesList extends Component
         $this->resetPage();
     }
 
-    public function updatingFiltroTipo()
-    {
-        $this->resetPage();
-    }
-
     public function updatingFiltroUso()
     {
         $this->resetPage();
@@ -43,7 +36,7 @@ class UnidadesList extends Component
 
     public function limpiarFiltros()
     {
-        $this->reset(['busqueda', 'filtroTipo', 'filtroUso']);
+        $this->reset(['busqueda', 'filtroUso']);
     }
 
     public function ordenar($campo)
@@ -79,10 +72,6 @@ class UnidadesList extends Component
 
         if ($this->busqueda) {
             $query->buscar($this->busqueda);
-        }
-
-        if ($this->filtroTipo) {
-            $query->where('TipoUnidad', $this->filtroTipo);
         }
 
         if ($this->filtroUso) {
