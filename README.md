@@ -98,10 +98,15 @@ CREATE DATABASE seguros_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ### 7. Ejecutar Migraciones y Seeders
 
 ```bash
-php artisan migrate --seed
+ # Borrar todo
+php artisan migrate:fresh
+
+# Recrear solo usuarios
+php artisan db:seed --class=UsersSeeder
 ```
 
 Este comando creará todas las tablas necesarias y poblará la base de datos con datos de prueba, incluyendo:
+
 - 2 usuarios de ejemplo
 - 7 compañías aseguradoras
 - 5 asegurados
@@ -111,11 +116,13 @@ Este comando creará todas las tablas necesarias y poblará la base de datos con
 ### 8. Compilar Assets
 
 Para desarrollo:
+
 ```bash
 npm run dev
 ```
 
 Para producción:
+
 ```bash
 npm run build
 ```
@@ -131,10 +138,12 @@ La aplicación estará disponible en: `http://localhost:8000`
 ## Credenciales de Acceso
 
 ### Usuario Administrador
+
 - **Email:** admin@seguros.com
 - **Contraseña:** password
 
 ### Usuario Agente
+
 - **Email:** agente@seguros.com
 - **Contraseña:** password
 
@@ -165,6 +174,7 @@ La aplicación estará disponible en: `http://localhost:8000`
 ## Comandos Útiles
 
 ### Limpiar Cache
+
 ```bash
 php artisan config:clear
 php artisan cache:clear
@@ -172,11 +182,13 @@ php artisan view:clear
 ```
 
 ### Refrescar Base de Datos
+
 ```bash
 php artisan migrate:fresh --seed
 ```
 
 ### Compilar Assets en Modo Watch
+
 ```bash
 npm run dev
 ```
@@ -184,6 +196,7 @@ npm run dev
 ## Módulos del Sistema
 
 ### 📋 Pólizas
+
 - Crear, editar y visualizar pólizas
 - Renovación automática de pólizas
 - Cancelación de pólizas
@@ -191,27 +204,32 @@ npm run dev
 - Alertas de vencimiento
 
 ### 👥 Asegurados
+
 - Registro completo de clientes
 - Datos personales y fiscales
 - Historial de pólizas por asegurado
 - Búsqueda y filtrado avanzado
 
 ### 🏢 Compañías
+
 - Catálogo de aseguradoras
 - Tipos de cobertura
 - Estadísticas por compañía
 
 ### 🚗 Unidades
+
 - Registro de vehículos
 - Información técnica completa
 - Vinculación con pólizas
 
 ### 📊 Reportes
+
 - Reporte de ventas
 - Próximas renovaciones
 - Análisis de comisiones
 
 ### 📥 Importación
+
 - Importación masiva desde Excel
 - Plantillas descargables
 - Validación de datos
@@ -256,6 +274,7 @@ chown -R www-data:www-data storage bootstrap/cache
 ## Soporte y Contacto
 
 **Rentería Seguros**
+
 - 📧 Email: rrenteriam76@gmail.com
 - 📱 Teléfono: (442) 183.22.50
 - 🌐 WhatsApp: (442) 773.79.25
