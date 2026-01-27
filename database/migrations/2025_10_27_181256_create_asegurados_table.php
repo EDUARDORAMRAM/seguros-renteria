@@ -17,7 +17,7 @@ return new class extends Migration
         $table->string('ApellidoPaterno');
         $table->string('ApellidoMaterno')->nullable();
         $table->string('Telefono')->nullable();
-        $table->string('Email')->unique();
+        $table->string('Email')->nullable();
         $table->string('RFC')->unique();
         $table->string('Referencia')->nullable();
         $table->timestamps();

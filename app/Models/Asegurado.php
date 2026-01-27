@@ -39,38 +39,23 @@ class Asegurado extends Model
             ->where('Estatus', 'Activa');
     }
 
-    // Scopes
+    // Scope para búsqueda
     public function scopeBuscar($query, $busqueda)
     {
         return $query->where(function($q) use ($busqueda) {
             $q->where('Nombre', 'like', "%{$busqueda}%")
               ->orWhere('ApellidoPaterno', 'like', "%{$busqueda}%")
               ->orWhere('ApellidoMaterno', 'like', "%{$busqueda}%")
-              ->orWhere('RFC', 'like', "%{$busqueda}%")
               ->orWhere('Email', 'like', "%{$busqueda}%")
-              ->orWhere('Telefono', 'like', "%{$busqueda}%");
+              ->orWhere('RFC', 'like', "%{$busqueda}%")
+              ->orWhere('Telefono', 'like', "%{$busqueda}%")
+              ->orWhere('Referencia', 'like', "%{$busqueda}%");
         });
     }
 
-    // Atributos
+    // Accessor para nombre completo
     public function getNombreCompletoAttribute()
     {
         return trim("{$this->Nombre} {$this->ApellidoPaterno} {$this->ApellidoMaterno}");
-    }
-    public function getInicialesAttribute()
-    {
-        $nombre = substr($this->Nombre, 0, 1);
-        $apellido = substr($this->ApellidoPaterno, 0, 1);
-        return strtoupper($nombre . $apellido);
-    }
-
-    public function getTotalPolizasAttribute()
-    {
-        return $this->polizas()->count();
-    }
-
-    public function getTotalPolizasActivasAttribute()
-    {
-        return $this->polizasActivas()->count();
     }
 }

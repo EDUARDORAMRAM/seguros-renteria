@@ -3,314 +3,228 @@
         
         {{-- Header --}}
         <div class="mb-6">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-                📊 Importar Datos desde Excel
+            <h2 class="text-3xl font-bold text-gray-900">
+                📊 Importar Datos desde CSV
             </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Carga tus archivos de Excel para migrar tu información al sistema
+            <p class="text-sm text-gray-600 mt-1">
+                Importa tus 4 archivos CSV (Compañías, Asegurados, Unidades, Pólizas)
             </p>
         </div>
 
         {{-- Mensajes --}}
         @if (session()->has('message'))
             <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
-                {{ session('message') }}
+                ✅ {{ session('message') }}
             </div>
         @endif
 
         @if (session()->has('error'))
             <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
-                {{ session('error') }}
+                ❌ {{ session('error') }}
             </div>
         @endif
 
         {{-- Instrucciones --}}
-        <div class="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-            <div class="flex items-start">
-                <svg class="h-6 w-6 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <div>
-                    <h3 class="text-lg font-bold text-blue-800">Instrucciones de Importación</h3>
-                    <ul class="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
-                        <li>Descarga las plantillas de Excel haciendo clic en los botones correspondientes</li>
-                        <li>Llena las plantillas con tus datos siguiendo el formato indicado</li>
-                        <li>Sube los archivos en el orden sugerido: 1) Compañías, 2) Clientes, 3) Unidades, 4) Pólizas</li>
-                        <li>Los archivos deben estar en formato .xlsx, .xls o .csv</li>
-                        <li>Tamaño máximo por archivo: 10 MB</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        {{-- Grid de Secciones --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {{-- 1. Importar Compañías Aseguradoras --}}
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="text-2xl">🏢</span>
-                            Compañías Aseguradoras
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Paso 1: Importar primero las compañías
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        Paso 1
-                    </span>
-                </div>
-
-                <div class="space-y-4">
-                    <button wire:click="descargarPlantilla('companias')" 
-                            class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Descargar Plantilla
-                    </button>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Seleccionar archivo Excel
-                        </label>
-                        <input type="file" 
-                               wire:model="archivoCompanias" 
-                               accept=".xlsx,.xls,.csv"
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        @error('archivoCompanias') 
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    @if($archivoCompanias)
-                        <button wire:click="importarCompanias" 
-                                wire:loading.attr="disabled"
-                                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            Importar Compañías
-                        </button>
-                    @endif
-
-                    @if($progresoCompanias > 0)
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                                 style="width: {{ $progresoCompanias }}%"></div>
-                        </div>
-                        <p class="text-sm text-center text-gray-600">{{ $progresoCompanias }}%</p>
-                    @endif
-                </div>
-            </div>
-
-            {{-- 2. Importar Clientes --}}
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="text-2xl">👥</span>
-                            Clientes (Asegurados)
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Paso 2: Importar tu base de clientes
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Paso 2
-                    </span>
-                </div>
-
-                <div class="space-y-4">
-                    <button wire:click="descargarPlantilla('clientes')" 
-                            class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Descargar Plantilla
-                    </button>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Seleccionar archivo Excel
-                        </label>
-                        <input type="file" 
-                               wire:model="archivoClientes" 
-                               accept=".xlsx,.xls,.csv"
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
-                        @error('archivoClientes') 
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    @if($archivoClientes)
-                        <button wire:click="importarClientes" 
-                                wire:loading.attr="disabled"
-                                class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            Importar Clientes
-                        </button>
-                    @endif
-
-                    @if($progresoClientes > 0)
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" 
-                                 style="width: {{ $progresoClientes }}%"></div>
-                        </div>
-                        <p class="text-sm text-center text-gray-600">{{ $progresoClientes }}%</p>
-                    @endif
-                </div>
-            </div>
-
-            {{-- 3. Importar Unidades --}}
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="text-2xl">🚗</span>
-                            Unidades (Vehículos)
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Paso 3: Importar los vehículos
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        Paso 3
-                    </span>
-                </div>
-
-                <div class="space-y-4">
-                    <button wire:click="descargarPlantilla('unidades')" 
-                            class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Descargar Plantilla
-                    </button>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Seleccionar archivo Excel
-                        </label>
-                        <input type="file" 
-                               wire:model="archivoUnidades" 
-                               accept=".xlsx,.xls,.csv"
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
-                        @error('archivoUnidades') 
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    @if($archivoUnidades)
-                        <button wire:click="importarUnidades" 
-                                wire:loading.attr="disabled"
-                                class="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            Importar Unidades
-                        </button>
-                    @endif
-
-                    @if($progresoUnidades > 0)
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-orange-600 h-2.5 rounded-full transition-all duration-300" 
-                                 style="width: {{ $progresoUnidades }}%"></div>
-                        </div>
-                        <p class="text-sm text-center text-gray-600">{{ $progresoUnidades }}%</p>
-                    @endif
-                </div>
-            </div>
-
-            {{-- 4. Importar Pólizas --}}
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="text-2xl">📋</span>
-                            Pólizas
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Paso 4: Finalmente, importar las pólizas
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Paso 4
-                    </span>
-                </div>
-
-                <div class="space-y-4">
-                    <button wire:click="descargarPlantilla('polizas')" 
-                            class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Descargar Plantilla
-                    </button>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Seleccionar archivo Excel
-                        </label>
-                        <input type="file" 
-                               wire:model="archivoPolizas" 
-                               accept=".xlsx,.xls,.csv"
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
-                        @error('archivoPolizas') 
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    @if($archivoPolizas)
-                        <button wire:click="importarPolizas" 
-                                wire:loading.attr="disabled"
-                                class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            Importar Pólizas
-                        </button>
-                    @endif
-
-                    @if($progresoPolizas > 0)
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-red-600 h-2.5 rounded-full transition-all duration-300" 
-                                 style="width: {{ $progresoPolizas }}%"></div>
-                        </div>
-                        <p class="text-sm text-center text-gray-600">{{ $progresoPolizas }}%</p>
-                    @endif
-                </div>
-            </div>
-
-        </div>
-
-        {{-- Resultados de Importación --}}
-        @if(count($resultados) > 0)
-            <div class="mt-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    📊 Resultados de Importación
-                </h3>
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
+            <h3 class="text-lg font-bold text-blue-800 mb-2">📋 Formato de los CSV</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 
-                <div class="space-y-4">
+                {{-- CSV 1: Companias --}}
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h4 class="font-bold text-purple-700 mb-2">1️⃣ companias.csv</h4>
+                    <div class="text-xs space-y-1">
+                        <code class="bg-gray-100 px-2 py-1 rounded block">IdCompania,Nombre,Cobertura</code>
+                        <code class="bg-gray-100 px-2 py-1 rounded block">1,CHUBB,AMPLIA</code>
+                    </div>
+                </div>
+
+                {{-- CSV 2: Asegurados --}}
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h4 class="font-bold text-green-700 mb-2">2️⃣ asegurados.csv</h4>
+                    <div class="text-xs space-y-1">
+                        <code class="bg-gray-100 px-2 py-1 rounded block">AseguradoID,Nombre,RFC,Telefono,Email</code>
+                        <code class="bg-gray-100 px-2 py-1 rounded block">1,GARCIA LOPEZ JUAN,GALJ...</code>
+                    </div>
+                </div>
+
+                {{-- CSV 3: Unidades --}}
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h4 class="font-bold text-orange-700 mb-2">3️⃣ unidades.csv</h4>
+                    <div class="text-xs space-y-1">
+                        <code class="bg-gray-100 px-2 py-1 rounded block">IdUnidad,Marca,Submarca,Modelo,VIN,Año,Motor</code>
+                        <code class="bg-gray-100 px-2 py-1 rounded block">1,KIA,SELTOS,EX,MZBE...</code>
+                    </div>
+                </div>
+
+                {{-- CSV 4: Polizas --}}
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h4 class="font-bold text-red-700 mb-2">4️⃣ polizas.csv</h4>
+                    <div class="text-xs space-y-1">
+                        <code class="bg-gray-100 px-2 py-1 rounded block">IdPoliza,NumPoliza,FormaPago,FechaInicio...</code>
+                        <code class="bg-gray-100 px-2 py-1 rounded block">1,M645721062,ANUAL,2025-09-25...</code>
+                    </div>
+                </div>
+
+            </div>
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                <p class="text-xs text-yellow-800">
+                    <strong>💡 Cómo crear los CSV:</strong> Abre tu Excel → Selecciona cada hoja → Guardar Como → CSV (delimitado por comas)
+                </p>
+            </div>
+        </div>
+
+        {{-- Sección de carga --}}
+        <div class="bg-white shadow-xl rounded-xl p-8 border border-gray-100">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+                📤 Cargar Archivos CSV
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {{-- CSV 1: Compañías --}}
+                <div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
+                    <label class="block">
+                        <span class="text-sm font-bold text-purple-800 mb-2 block">
+                            1️⃣ Compañías (companias.csv)
+                        </span>
+                        <input type="file" 
+                               wire:model="csvCompanias" 
+                               accept=".csv"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        @error('csvCompanias') 
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($csvCompanias)
+                            <p class="mt-2 text-xs text-green-600">✅ {{ $csvCompanias->getClientOriginalName() }}</p>
+                        @endif
+                    </label>
+                </div>
+
+                {{-- CSV 2: Asegurados --}}
+                <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                    <label class="block">
+                        <span class="text-sm font-bold text-green-800 mb-2 block">
+                            2️⃣ Asegurados (asegurados.csv)
+                        </span>
+                        <input type="file" 
+                               wire:model="csvAsegurados" 
+                               accept=".csv"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
+                        @error('csvAsegurados') 
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($csvAsegurados)
+                            <p class="mt-2 text-xs text-green-600">✅ {{ $csvAsegurados->getClientOriginalName() }}</p>
+                        @endif
+                    </label>
+                </div>
+
+                {{-- CSV 3: Unidades --}}
+                <div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
+                    <label class="block">
+                        <span class="text-sm font-bold text-orange-800 mb-2 block">
+                            3️⃣ Unidades (unidades.csv)
+                        </span>
+                        <input type="file" 
+                               wire:model="csvUnidades" 
+                               accept=".csv"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer">
+                        @error('csvUnidades') 
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($csvUnidades)
+                            <p class="mt-2 text-xs text-green-600">✅ {{ $csvUnidades->getClientOriginalName() }}</p>
+                        @endif
+                    </label>
+                </div>
+
+                {{-- CSV 4: Pólizas --}}
+                <div class="border-2 border-red-200 rounded-lg p-4 bg-red-50">
+                    <label class="block">
+                        <span class="text-sm font-bold text-red-800 mb-2 block">
+                            4️⃣ Pólizas (polizas.csv)
+                        </span>
+                        <input type="file" 
+                               wire:model="csvPolizas" 
+                               accept=".csv"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-100 file:text-red-700 hover:file:bg-red-200 cursor-pointer">
+                        @error('csvPolizas') 
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($csvPolizas)
+                            <p class="mt-2 text-xs text-green-600">✅ {{ $csvPolizas->getClientOriginalName() }}</p>
+                        @endif
+                    </label>
+                </div>
+
+            </div>
+
+            @if($csvCompanias && $csvAsegurados && $csvUnidades && $csvPolizas)
+                <div class="mt-6">
+                    <button wire:click="importarCsvs" 
+                            wire:loading.attr="disabled"
+                            class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        Iniciar Importación
+                    </button>
+                </div>
+            @endif
+
+            @if($progreso > 0)
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Progreso</span>
+                        <span class="text-sm font-bold text-blue-600">{{ $progreso }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500" 
+                             style="width: {{ $progreso }}%"></div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Resultados --}}
+        @if(count($resultados) > 0)
+            <div class="mt-6 bg-white shadow-xl rounded-xl p-6 border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">📊 Resultados</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach($resultados as $tipo => $resultado)
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <h4 class="font-semibold text-gray-900 dark:text-white capitalize mb-2">
-                                {{ ucfirst($tipo) }}
-                            </h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Importados: <span class="font-bold text-green-600">{{ $resultado['importados'] }}</span> de {{ $resultado['total'] }}
-                            </p>
+                        @php
+                            $colores = [
+                                'companias' => ['bg' => 'bg-purple-50', 'border' => 'border-purple-200', 'text' => 'text-purple-800'],
+                                'asegurados' => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'text' => 'text-green-800'],
+                                'unidades' => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'text' => 'text-orange-800'],
+                                'polizas' => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'text' => 'text-red-800'],
+                            ];
+                            $color = $colores[$tipo] ?? ['bg' => 'bg-gray-50', 'border' => 'border-gray-200', 'text' => 'text-gray-800'];
+                        @endphp
+                        
+                        <div class="border-2 {{ $color['border'] }} {{ $color['bg'] }} rounded-lg p-5">
+                            <h4 class="font-bold {{ $color['text'] }} capitalize mb-3">{{ ucfirst($tipo) }}</h4>
+                            
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Total:</span>
+                                    <span class="font-bold">{{ $resultado['total'] }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Importados:</span>
+                                    <span class="font-bold text-green-600">{{ $resultado['importados'] }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Errores:</span>
+                                    <span class="font-bold text-red-600">{{ count($resultado['errores']) }}</span>
+                                </div>
+                            </div>
                             
                             @if(count($resultado['errores']) > 0)
-                                <details class="mt-2">
-                                    <summary class="text-sm text-red-600 cursor-pointer">
-                                        Ver errores ({{ count($resultado['errores']) }})
-                                    </summary>
-                                    <ul class="mt-2 text-xs text-red-600 list-disc list-inside space-y-1">
+                                <details class="mt-4">
+                                    <summary class="text-sm text-red-600 cursor-pointer">⚠️ Ver errores</summary>
+                                    <ul class="mt-2 text-xs text-red-600 max-h-40 overflow-y-auto">
                                         @foreach($resultado['errores'] as $error)
                                             <li>{{ $error }}</li>
                                         @endforeach
@@ -325,16 +239,15 @@
 
     </div>
 
-    {{-- Loading Overlay --}}
-    <div wire:loading wire:target="importarCompanias,importarClientes,importarUnidades,importarPolizas" 
+    {{-- Loading --}}
+    <div wire:loading wire:target="importarCsvs" 
          class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-8 flex flex-col items-center gap-4">
-            <svg class="animate-spin h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center gap-4">
+            <svg class="animate-spin h-16 w-16 text-blue-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span class="text-lg font-semibold text-gray-900 dark:text-white">Importando datos...</span>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Por favor espera</span>
+            <span class="text-xl font-bold">Importando... {{ $progreso }}%</span>
         </div>
     </div>
 </div>

@@ -14,7 +14,6 @@ return new class extends Migration
     Schema::create('unidads', function (Blueprint $table) {
         $table->id('IdUnidad');
         $table->string('VIN')->unique();
-        $table->string('TipoUnidad');
         $table->string('Marca');
         $table->string('Submarca')->nullable();
         $table->year('Anio');

@@ -8,396 +8,411 @@ use App\Models\Compania;
 use App\Models\Unidad;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class ImportarExcel extends Component
 {
     use WithFileUploads;
 
-    public $archivoPolizas;
-    public $archivoClientes;
-    public $archivoUnidades;
-    public $archivoCompanias;
+    public $csvCompanias;
+    public $csvAsegurados;
+    public $csvUnidades;
+    public $csvPolizas;
     
     public $importando = false;
-    public $progresoPolizas = 0;
-    public $progresoClientes = 0;
-    public $progresoUnidades = 0;
-    public $progresoCompanias = 0;
-    
+    public $progreso = 0;
     public $resultados = [];
 
     protected $rules = [
-        'archivoPolizas' => 'nullable|file|mimes:xlsx,xls,csv|max:10240',
-        'archivoClientes' => 'nullable|file|mimes:xlsx,xls,csv|max:10240',
-        'archivoUnidades' => 'nullable|file|mimes:xlsx,xls,csv|max:10240',
-        'archivoCompanias' => 'nullable|file|mimes:xlsx,xls,csv|max:10240',
+        'csvCompanias' => 'required|file|mimes:csv,txt|max:10240',
+        'csvAsegurados' => 'required|file|mimes:csv,txt|max:10240',
+        'csvUnidades' => 'required|file|mimes:csv,txt|max:10240',
+        'csvPolizas' => 'required|file|mimes:csv,txt|max:10240',
     ];
 
-    public function importarCompanias()
+    public function importarCsvs()
     {
-        $this->validate([
-            'archivoCompanias' => 'required|file|mimes:xlsx,xls,csv|max:10240'
-        ]);
+        $this->validate();
 
         $this->importando = true;
-        $this->progresoCompanias = 0;
+        $this->progreso = 0;
+        $this->resultados = [];
 
         try {
-            $data = Excel::toArray([], $this->archivoCompanias)[0];
-            $total = count($data) - 1; // Menos el header
-            $importados = 0;
-            $errores = [];
+            DB::beginTransaction();
 
-            foreach (array_slice($data, 1) as $index => $row) {
-                try {
-                    Compania::create([
-                        'Nombre' => $row[0] ?? '',
-                        'Cobertura' => $row[1] ?? '',
-                    ]);
-                    $importados++;
-                } catch (\Exception $e) {
-                    $errores[] = "Fila " . ($index + 2) . ": " . $e->getMessage();
-                }
-                
-                $this->progresoCompanias = round((($index + 1) / $total) * 100);
-            }
+            $this->progreso = 10;
+            $resultadoCompanias = $this->importarCompaniasData($this->csvCompanias->getRealPath());
+            $this->resultados['companias'] = $resultadoCompanias;
 
-            $this->resultados['companias'] = [
-                'total' => $total,
-                'importados' => $importados,
-                'errores' => $errores
-            ];
+            $this->progreso = 30;
+            $resultadoAsegurados = $this->importarAseguradosData($this->csvAsegurados->getRealPath());
+            $this->resultados['asegurados'] = $resultadoAsegurados;
 
-            session()->flash('message', "Compañías importadas: {$importados} de {$total}");
+            $this->progreso = 50;
+            $resultadoUnidades = $this->importarUnidadesData($this->csvUnidades->getRealPath());
+            $this->resultados['unidades'] = $resultadoUnidades;
+
+            $this->progreso = 70;
+            $resultadoPolizas = $this->importarPolizasData(
+                $this->csvPolizas->getRealPath(),
+                $resultadoAsegurados['mapa_ids'],
+                $resultadoUnidades['mapa_ids'],
+                $resultadoCompanias['mapa_ids']
+            );
+            $this->resultados['polizas'] = $resultadoPolizas;
+
+            DB::commit();
+
+            $this->progreso = 100;
+            
+            $totalImportados = 
+                $resultadoCompanias['importados'] + 
+                $resultadoAsegurados['importados'] + 
+                $resultadoUnidades['importados'] + 
+                $resultadoPolizas['importados'];
+
+            session()->flash('message', "✅ Importación completada: {$totalImportados} registros importados");
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al importar: ' . $e->getMessage());
+            DB::rollBack();
+            session()->flash('error', 'Error en importación: ' . $e->getMessage());
+            \Log::error('Error en importación CSV: ' . $e->getMessage());
         }
 
         $this->importando = false;
-        $this->archivoCompanias = null;
+        $this->reset(['csvCompanias', 'csvAsegurados', 'csvUnidades', 'csvPolizas']);
     }
 
-    public function importarClientes()
+    private function importarCompaniasData($filePath)
     {
-        $this->validate([
-            'archivoClientes' => 'required|file|mimes:xlsx,xls,csv|max:10240'
-        ]);
+        $importados = 0;
+        $errores = [];
+        $mapa_ids = [];
 
-        $this->importando = true;
-        $this->progresoClientes = 0;
-
-        try {
-            $data = Excel::toArray([], $this->archivoClientes)[0];
-            $total = count($data) - 1;
-            $importados = 0;
-            $errores = [];
-
-            foreach (array_slice($data, 1) as $index => $row) {
-                try {
-                    Asegurado::create([
-                        'Nombre' => $row[0] ?? '',
-                        'ApellidoPaterno' => $row[1] ?? '',
-                        'ApellidoMaterno' => $row[2] ?? '',
-                        'Telefono' => $row[3] ?? '',
-                        'Email' => $row[4] ?? '',
-                        'RFC' => $row[5] ?? '',
-                        'Referencia' => $row[6] ?? null,
-                    ]);
-                    $importados++;
-                } catch (\Exception $e) {
-                    $errores[] = "Fila " . ($index + 2) . ": " . $e->getMessage();
-                }
-                
-                $this->progresoClientes = round((($index + 1) / $total) * 100);
-            }
-
-            $this->resultados['clientes'] = [
-                'total' => $total,
-                'importados' => $importados,
-                'errores' => $errores
-            ];
-
-            session()->flash('message', "Clientes importados: {$importados} de {$total}");
+        $file = fopen($filePath, 'r');
+        fgetcsv($file); // Skip header
+        
+        $lineNumber = 1;
+        while (($row = fgetcsv($file)) !== false) {
+            $lineNumber++;
             
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error al importar: ' . $e->getMessage());
-        }
+            try {
+                if (empty($row[1]) || empty($row[2])) {
+                    continue;
+                }
 
-        $this->importando = false;
-        $this->archivoClientes = null;
+                $idExcel = (int) ($row[0] ?? 0);
+                $nombre = trim($row[1]);
+                $cobertura = trim($row[2]);
+
+                $compania = Compania::firstOrCreate(
+                    ['Nombre' => $nombre, 'Cobertura' => $cobertura]
+                );
+
+                $mapa_ids[$idExcel] = $compania->IdCompania;
+                $importados++;
+                
+            } catch (\Exception $e) {
+                $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
+            }
+        }
+        
+        fclose($file);
+
+        return [
+            'total' => $lineNumber - 1,
+            'importados' => $importados,
+            'errores' => $errores,
+            'mapa_ids' => $mapa_ids
+        ];
     }
 
-    public function importarUnidades()
+    private function importarAseguradosData($filePath)
     {
-        $this->validate([
-            'archivoUnidades' => 'required|file|mimes:xlsx,xls,csv|max:10240'
-        ]);
+        $importados = 0;
+        $errores = [];
+        $mapa_ids = [];
 
-        $this->importando = true;
-        $this->progresoUnidades = 0;
-
-        try {
-            $data = Excel::toArray([], $this->archivoUnidades)[0];
-            $total = count($data) - 1;
-            $importados = 0;
-            $errores = [];
-
-            foreach (array_slice($data, 1) as $index => $row) {
-                try {
-                    Unidad::create([
-                        'VIN' => $row[0] ?? '',
-                        'TipoUnidad' => $row[1] ?? 'Automóvil',
-                        'Marca' => $row[2] ?? '',
-                        'Submarca' => $row[3] ?? '',
-                        'Anio' => $row[4] ?? now()->year,
-                        'NoSerie' => $row[5] ?? '',
-                        'Motor' => $row[6] ?? '',
-                        'Placas' => $row[7] ?? '',
-                        'Color' => $row[8] ?? '',
-                        'Uso' => $row[9] ?? 'Particular',
-                    ]);
-                    $importados++;
-                } catch (\Exception $e) {
-                    $errores[] = "Fila " . ($index + 2) . ": " . $e->getMessage();
-                }
-                
-                $this->progresoUnidades = round((($index + 1) / $total) * 100);
-            }
-
-            $this->resultados['unidades'] = [
-                'total' => $total,
-                'importados' => $importados,
-                'errores' => $errores
-            ];
-
-            session()->flash('message', "Unidades importadas: {$importados} de {$total}");
+        $file = fopen($filePath, 'r');
+        fgetcsv($file);
+        
+        $lineNumber = 1;
+        while (($row = fgetcsv($file)) !== false) {
+            $lineNumber++;
             
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error al importar: ' . $e->getMessage());
-        }
+            try {
+                if (empty($row[1]) || empty($row[2])) {
+                    continue;
+                }
 
-        $this->importando = false;
-        $this->archivoUnidades = null;
+                $idExcel = (int) ($row[0] ?? 0);
+                $nombreCompleto = trim($row[1]);
+                $rfc = trim($row[2]);
+                $telefono = $this->limpiarTelefono($row[3] ?? '');
+                $email = trim($row[4] ?? '');
+
+                $partes = $this->dividirNombreCompleto($nombreCompleto);
+
+                if (Asegurado::where('RFC', $rfc)->exists()) {
+                    throw new \Exception("RFC duplicado: {$rfc}");
+                }
+
+                if (!empty($email) && Asegurado::where('Email', $email)->exists()) {
+                    throw new \Exception("Email duplicado: {$email}");
+                }
+
+                $asegurado = Asegurado::create([
+                    'Nombre' => $partes['nombre'],
+                    'ApellidoPaterno' => $partes['apellido_paterno'],
+                    'ApellidoMaterno' => $partes['apellido_materno'],
+                    'RFC' => $rfc,
+                    'Telefono' => $telefono ?: null,
+                    'Email' => $email ?: null,
+                    'Referencia' => null,
+                ]);
+
+                $mapa_ids[$idExcel] = $asegurado->IdAsegurado;
+                $importados++;
+                
+            } catch (\Exception $e) {
+                $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
+            }
+        }
+        
+        fclose($file);
+
+        return [
+            'total' => $lineNumber - 1,
+            'importados' => $importados,
+            'errores' => $errores,
+            'mapa_ids' => $mapa_ids
+        ];
     }
 
-    public function importarPolizas()
-{
-    $this->validate([
-        'archivoPolizas' => 'required|file|mimes:xlsx,xls,csv|max:10240'
-    ]);
+    private function importarUnidadesData($filePath)
+    {
+        $importados = 0;
+        $errores = [];
+        $mapa_ids = [];
 
-    $this->importando = true;
-    $this->progresoPolizas = 0;
+        $file = fopen($filePath, 'r');
+        fgetcsv($file);
+        
+        $lineNumber = 1;
+        while (($row = fgetcsv($file)) !== false) {
+            $lineNumber++;
+            
+            try {
+                if (empty($row[1]) || empty($row[4])) {
+                    continue;
+                }
 
-    try {
-        $data = Excel::toArray([], $this->archivoPolizas)[0];
-        $total = count($data) - 1;
+                $idExcel = (int) ($row[0] ?? 0);
+                $marca = trim($row[1]);
+                $submarca = trim($row[2] ?? 'SIN SUBMARCA');
+                $modelo = trim($row[3] ?? '');
+                $vin = trim($row[4]);
+                $anio = (int) ($row[5] ?? now()->year);
+                $motor = trim($row[6] ?? 'SIN MOTOR');
+
+                $tipoUnidad = $this->inferirTipoUnidad($modelo, $marca);
+                $noSerie = $this->generarNoSerie($vin);
+                $placas = $this->generarPlacas();
+
+                if (Unidad::where('VIN', $vin)->exists()) {
+                    throw new \Exception("VIN duplicado: {$vin}");
+                }
+
+                $unidad = Unidad::create([
+                    'VIN' => $vin,
+                    'TipoUnidad' => $tipoUnidad,
+                    'Marca' => $marca,
+                    'Submarca' => $submarca,
+                    'Anio' => $anio,
+                    'NoSerie' => $noSerie,
+                    'Motor' => $motor,
+                    'Placas' => $placas,
+                    'Color' => 'POR DEFINIR',
+                    'Uso' => 'Particular',
+                ]);
+
+                $mapa_ids[$idExcel] = $unidad->IdUnidad;
+                $importados++;
+                
+            } catch (\Exception $e) {
+                $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
+            }
+        }
+        
+        fclose($file);
+
+        return [
+            'total' => $lineNumber - 1,
+            'importados' => $importados,
+            'errores' => $errores,
+            'mapa_ids' => $mapa_ids
+        ];
+    }
+
+    private function importarPolizasData($filePath, $mapaAsegurados, $mapaUnidades, $mapaCompanias)
+    {
         $importados = 0;
         $errores = [];
 
-        foreach (array_slice($data, 1) as $index => $row) {
+        $file = fopen($filePath, 'r');
+        fgetcsv($file);
+        
+        $lineNumber = 1;
+        while (($row = fgetcsv($file)) !== false) {
+            $lineNumber++;
+            
             try {
-                // ═══════════════════════════════════════════════════════════
-                // PASO 1: Buscar Compañía (Nombre + Cobertura)
-                // ═══════════════════════════════════════════════════════════
-                $compania = Compania::where('Nombre', $row[6] ?? '')
-                    ->where('Cobertura', $row[7] ?? '')
-                    ->first();
+                if (empty($row[1])) {
+                    continue;
+                }
+
+                $numPoliza = trim($row[1]);
+                $formaPago = strtoupper(trim($row[2] ?? 'ANUAL'));
+                $fechaInicio = $this->parsearFecha($row[3]);
+                $fechaVencimiento = $this->parsearFecha($row[4]);
+                $prima = floatval($row[6] ?? 0);
+                $estatus = ucfirst(strtolower(trim($row[7] ?? 'Activa')));
                 
-                if (!$compania) {
-                    throw new \Exception("Compañía no encontrada: {$row[6]} - {$row[7]}");
+                $idCompaniaExcel = (int) ($row[8] ?? 0);
+                $idAseguradoExcel = (int) ($row[9] ?? 0);
+                $idUnidadExcel = (int) ($row[10] ?? 0);
+
+                $idCompania = $mapaCompanias[$idCompaniaExcel] ?? null;
+                $idAsegurado = $mapaAsegurados[$idAseguradoExcel] ?? null;
+                $idUnidad = $mapaUnidades[$idUnidadExcel] ?? null;
+
+                if (!$idCompania || !$idAsegurado || !$idUnidad) {
+                    throw new \Exception("Referencias inválidas");
                 }
 
-                // ═══════════════════════════════════════════════════════════
-                // PASO 2: Buscar Asegurado por RFC
-                // ═══════════════════════════════════════════════════════════
-                $asegurado = Asegurado::where('RFC', $row[1] ?? '')->first();
-                
-                if (!$asegurado) {
-                    throw new \Exception("Asegurado con RFC '{$row[1]}' no encontrado. Importa clientes primero.");
+                if ($prima <= 0) {
+                    $prima = 0;
                 }
 
-                // ═══════════════════════════════════════════════════════════
-                // PASO 3: Buscar Unidad por VIN o Placas
-                // ═══════════════════════════════════════════════════════════
-                $unidad = Unidad::where('VIN', $row[12] ?? '')
-                    ->orWhere('Placas', $row[8] ?? '')
-                    ->first();
-                
-                if (!$unidad) {
-                    throw new \Exception("Unidad con VIN '{$row[12]}' o Placas '{$row[8]}' no encontrada. Importa unidades primero.");
+                if (Poliza::where('NumPoliza', $numPoliza)->exists()) {
+                    throw new \Exception("NumPoliza duplicada: {$numPoliza}");
                 }
 
-                // ═══════════════════════════════════════════════════════════
-                // PASO 4: Parsear fechas (soporte múltiples formatos)
-                // ═══════════════════════════════════════════════════════════
-                $fechaInicio = $this->parsearFecha($row[14] ?? null);
-                $fechaVencimiento = $this->parsearFecha($row[15] ?? null);
-                
-                if (!$fechaInicio || !$fechaVencimiento) {
-                    throw new \Exception("Fechas inválidas. Formato esperado: DD/MM/YYYY o YYYY-MM-DD");
-                }
-
-                $formaPago = $row[13] ?? 'Anual';
-
-                // ═══════════════════════════════════════════════════════════
-                // PASO 5: VALIDAR COHERENCIA DE FECHAS
-                // ═══════════════════════════════════════════════════════════
-                $validacion = Poliza::validarCoherenciaFechas(
-                    $fechaInicio,
-                    $fechaVencimiento,
-                    $formaPago
-                );
-
-                if (!$validacion['valido']) {
-                    throw new \Exception($validacion['mensaje']);
-                }
-
-                // ═══════════════════════════════════════════════════════════
-                // PASO 6: Crear Póliza
-                // ═══════════════════════════════════════════════════════════
                 $poliza = Poliza::create([
-                    'NumPoliza' => $row[0] ?? '',
+                    'NumPoliza' => $numPoliza,
                     'FormaPago' => $formaPago,
                     'FechaInicio' => $fechaInicio,
                     'FechaVencimiento' => $fechaVencimiento,
-                    'Prima' => floatval($row[16] ?? 0),
-                    'Estatus' => $row[17] ?? 'Activa',
-                    'IdCompania' => $compania->IdCompania,
-                    'IdAsegurado' => $asegurado->IdAsegurado,
-                    'IdUnidad' => $unidad->IdUnidad,
+                    'Prima' => $prima,
+                    'Estatus' => $estatus,
+                    'IdCompania' => $idCompania,
+                    'IdAsegurado' => $idAsegurado,
+                    'IdUnidad' => $idUnidad,
                 ]);
 
-                // ═══════════════════════════════════════════════════════════
-                // PASO 7: ⭐ GENERAR FECHAS DE COBRANZA (CRÍTICO)
-                // ═══════════════════════════════════════════════════════════
-                $poliza->generarFechasCobranza();
-                
-                $importados++;
-            } catch (\Exception $e) {
-                $errores[] = "Fila " . ($index + 2) . ": " . $e->getMessage();
-            }
-            
-            $this->progresoPolizas = round((($index + 1) / $total) * 100);
-        }
+                if ($prima > 0) {
+                    $poliza->generarFechasCobranza();
+                }
 
-        $this->resultados['polizas'] = [
-            'total' => $total,
+                $importados++;
+                
+            } catch (\Exception $e) {
+                $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
+            }
+        }
+        
+        fclose($file);
+
+        return [
+            'total' => $lineNumber - 1,
             'importados' => $importados,
             'errores' => $errores
         ];
+    }
 
-        session()->flash('message', "Pólizas importadas: {$importados} de {$total} (con {$validacion['numeroPagos']} fechas de cobranza cada una)");
+    private function dividirNombreCompleto($nombreCompleto)
+    {
+        $partes = array_filter(explode(' ', $nombreCompleto));
+        $count = count($partes);
+
+        if ($count >= 3) {
+            return [
+                'apellido_paterno' => $partes[0],
+                'apellido_materno' => $partes[1],
+                'nombre' => implode(' ', array_slice($partes, 2))
+            ];
+        } elseif ($count == 2) {
+            return [
+                'apellido_paterno' => $partes[0],
+                'apellido_materno' => '',
+                'nombre' => $partes[1]
+            ];
+        } else {
+            return [
+                'apellido_paterno' => $nombreCompleto,
+                'apellido_materno' => '',
+                'nombre' => 'SIN NOMBRE'
+            ];
+        }
+    }
+
+    private function limpiarTelefono($telefono)
+    {
+        if (empty($telefono)) {
+            return '';
+        }
         
-    } catch (\Exception $e) {
-        session()->flash('error', 'Error al importar: ' . $e->getMessage());
+        if (is_numeric($telefono)) {
+            return (string) intval($telefono);
+        }
+        
+        return preg_replace('/[^0-9]/', '', $telefono);
     }
 
-    $this->importando = false;
-    $this->archivoPolizas = null;
-}
+    private function inferirTipoUnidad($modelo, $marca)
+    {
+        $modelo = strtoupper($modelo);
 
-// ═══════════════════════════════════════════════════════════
-// MÉTODO AUXILIAR: Parsear fechas de Excel
-// ═══════════════════════════════════════════════════════════
-private function parsearFecha($fecha)
-{
-    if (!$fecha) {
-        return null;
+        if (Str::contains($modelo, ['CHASIS', 'CAMION', 'GRUA'])) {
+            return 'Camión';
+        }
+        if (Str::contains($modelo, ['PICK', 'LOBO', 'RANGER'])) {
+            return 'Pickup';
+        }
+        if (Str::contains($modelo, ['SUV', 'SELTOS', 'SPORTAGE', 'TUCSON'])) {
+            return 'SUV';
+        }
+        
+        return 'Sedán';
     }
 
-    try {
-        // Si es número (formato Excel serial date)
-        if (is_numeric($fecha)) {
-            // Excel fecha serial: días desde 1900-01-01
-            // Convertir a timestamp Unix y luego a Carbon
-            $unixTimestamp = ($fecha - 25569) * 86400; // 25569 = días entre 1900 y 1970
-            return Carbon::createFromTimestamp($unixTimestamp)->startOfDay();
+    private function generarNoSerie($vin)
+    {
+        return 'NS-' . substr($vin, -8);
+    }
+
+    private function generarPlacas()
+    {
+        static $contador = 1000;
+        $contador++;
+        return 'IMP-' . str_pad($contador, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function parsearFecha($fecha)
+    {
+        if (empty($fecha)) {
+            return now();
         }
 
-        // Si es string, intentar múltiples formatos
-        $formatos = ['d/m/Y', 'Y-m-d', 'd-m-Y', 'm/d/Y'];
-
-        foreach ($formatos as $formato) {
-            try {
-                return Carbon::createFromFormat($formato, $fecha);
-            } catch (\Exception $e) {
-                continue;
-            }
+        try {
+            return \Carbon\Carbon::parse($fecha);
+        } catch (\Exception $e) {
+            return now();
         }
-
-        return null;
-    } catch (\Exception $e) {
-        return null;
-    }
-}
-
-    public function descargarPlantilla($tipo)
-{
-    $plantillas = [
-        'companias' => [
-            'nombre' => 'Plantilla_Companias.xlsx',
-            'headers' => ['Nombre', 'Cobertura'],
-            'ejemplos' => [
-                ['GNP Seguros', 'Amplia Plus'],
-                ['GNP Seguros', 'Limitada'],
-                ['AXA Seguros', 'Premium'],
-                ['Qualitas', 'Amplia'],
-                ['MAPFRE', 'Básica'],
-            ]
-        ],
-        'clientes' => [
-            'nombre' => 'Plantilla_Clientes.xlsx',
-            'headers' => ['Nombre', 'ApellidoPaterno', 'ApellidoMaterno', 'Telefono', 'Email', 'RFC', 'Referencia'],
-            'ejemplos' => [
-                ['Juan', 'Pérez', 'García', '4421234567', 'juan@email.com', 'PEGJ850101HDF', 'Cliente frecuente'],
-                ['María', 'López', 'Hernández', '4429876543', 'maria@email.com', 'LOHM900215MDF', 'Referido'],
-            ]
-        ],
-        'unidades' => [
-            'nombre' => 'Plantilla_Unidades.xlsx',
-            'headers' => ['VIN', 'TipoUnidad', 'Marca', 'Submarca', 'Año', 'NoSerie', 'Motor', 'Placas', 'Color', 'Uso'],
-            'ejemplos' => [
-                ['3N1AB7AP5HY123456', 'Sedán', 'Nissan', 'Versa', '2022', 'NV001', 'HR16DE', 'ABC123', 'Blanco', 'Particular'],
-                ['WVWZZZ3CZHE456789', 'Sedán', 'VW', 'Jetta', '2021', 'VW002', 'EA211', 'XYZ456', 'Negro', 'Uber'],
-            ]
-        ],
-        'polizas' => [
-            'nombre' => 'Plantilla_Polizas.xlsx',
-            'headers' => ['NumPoliza', 'RFC', 'Nombre', 'ApellidoP', 'ApellidoM', 'Telefono', 'Compania', 'Cobertura', 'Placas', 'Marca', 'Submarca', 'Año', 'VIN', 'FormaPago', 'FechaInicio', 'FechaVencimiento', 'Prima', 'Estatus'],
-            'ejemplos' => [
-                ['POL-00001', 'PEGJ850101HDF', 'Juan', 'Pérez', 'García', '4421234567', 'GNP Seguros', 'Amplia Plus', 'ABC123', 'Nissan', 'Versa', '2022', '3N1AB7AP5HY123456', 'Anual', '01/01/2025', '01/01/2026', '15000.00', 'Activa'],
-                ['POL-00002', 'LOHM900215MDF', 'María', 'López', 'Hernández', '4429876543', 'AXA Seguros', 'Premium', 'XYZ456', 'VW', 'Jetta', '2021', 'WVWZZZ3CZHE456789', 'Trimestral', '01/01/2025', '01/01/2026', '12000.00', 'Activa'],
-            ]
-        ],
-    ];
-
-    if (!isset($plantillas[$tipo])) {
-        session()->flash('error', 'Plantilla no encontrada');
-        return;
     }
 
-    $plantilla = $plantillas[$tipo];
-    
-    // Crear array para exportar (API Laravel-Excel v1)
-    $data = array_merge(
-        [$plantilla['headers']],
-        $plantilla['ejemplos']
-    );
-
-    // Usar la API antigua de Laravel-Excel v1
-    Excel::create($plantilla['nombre'], function($excel) use ($data) {
-        $excel->sheet('Plantilla', function($sheet) use ($data) {
-            $sheet->fromArray($data, null, 'A1', false, false);
-        });
-    })->download('xlsx');
-
-    return response()->noContent();
-}
     public function render()
     {
         return view('livewire.importar.importar-excel');
