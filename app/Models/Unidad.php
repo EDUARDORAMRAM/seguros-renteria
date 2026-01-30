@@ -17,7 +17,6 @@ class Unidad extends Model
         'Marca',
         'Submarca',
         'Anio',
-        'NoSerie',
         'Motor',
         'Placas',
         'Color',
@@ -50,8 +49,7 @@ class Unidad extends Model
             $q->where('VIN', 'like', "%{$busqueda}%")
               ->orWhere('Marca', 'like', "%{$busqueda}%")
               ->orWhere('Submarca', 'like', "%{$busqueda}%")
-              ->orWhere('Placas', 'like', "%{$busqueda}%")
-              ->orWhere('NoSerie', 'like', "%{$busqueda}%");
+              ->orWhere('Placas', 'like', "%{$busqueda}%");
         });
     }
 

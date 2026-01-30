@@ -217,8 +217,6 @@ class ImportarExcel extends Component
                 $anio = (int) ($row[5] ?? now()->year);
                 $motor = trim($row[6] ?? 'SIN MOTOR');
 
-                $tipoUnidad = $this->inferirTipoUnidad($modelo, $marca);
-                $noSerie = $this->generarNoSerie($vin);
                 $placas = $this->generarPlacas();
 
                 if (Unidad::where('VIN', $vin)->exists()) {
@@ -227,11 +225,9 @@ class ImportarExcel extends Component
 
                 $unidad = Unidad::create([
                     'VIN' => $vin,
-                    'TipoUnidad' => $tipoUnidad,
                     'Marca' => $marca,
                     'Submarca' => $submarca,
                     'Anio' => $anio,
-                    'NoSerie' => $noSerie,
                     'Motor' => $motor,
                     'Placas' => $placas,
                     'Color' => 'POR DEFINIR',
@@ -395,11 +391,6 @@ class ImportarExcel extends Component
         }
         
         return 'Sedán';
-    }
-
-    private function generarNoSerie($vin)
-    {
-        return 'NS-' . substr($vin, -8);
     }
 
     private function generarPlacas()

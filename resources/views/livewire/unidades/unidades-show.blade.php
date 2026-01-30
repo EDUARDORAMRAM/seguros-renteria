@@ -70,20 +70,16 @@
                         Identificación
                     </h3>
                     
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <p class="text-sm text-gray-500">VIN</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <p class="text-sm text-gray-500">VIN (Número de Serie)</p>
                             <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->VIN }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Número de Serie</p>
-                            <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->NoSerie }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Placas</p>
                             <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->Placas ?? 'N/A' }}</p>
                         </div>
-                        <div>
+                        <div class="md:col-span-3">
                             <p class="text-sm text-gray-500">Motor</p>
                             <p class="text-base font-medium text-gray-900 font-mono">{{ $unidad->Motor ?? 'N/A' }}</p>
                         </div>

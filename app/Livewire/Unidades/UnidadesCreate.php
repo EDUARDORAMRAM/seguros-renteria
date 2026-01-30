@@ -11,7 +11,6 @@ class UnidadesCreate extends Component
     public $Marca = '';
     public $Submarca = '';
     public $Anio = '';
-    public $NoSerie = '';
     public $Motor = '';
     public $Placas = '';
     public $Color = '';
@@ -24,7 +23,6 @@ class UnidadesCreate extends Component
             'Marca' => 'required|string|max:100',
             'Submarca' => 'required|string|max:100',
             'Anio' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'NoSerie' => 'required|string|max:50|unique:unidads,NoSerie',
             'Motor' => 'nullable|string|max:50',
             'Placas' => 'nullable|string|max:20|unique:unidads,Placas',
             'Color' => 'nullable|string|max:50',
@@ -41,8 +39,6 @@ class UnidadesCreate extends Component
         'Anio.integer' => 'El año debe ser un número.',
         'Anio.min' => 'El año no puede ser menor a 1900.',
         'Anio.max' => 'El año no puede ser mayor al año próximo.',
-        'NoSerie.required' => 'El número de serie es obligatorio.',
-        'NoSerie.unique' => 'Este número de serie ya está registrado.',
         'Placas.unique' => 'Estas placas ya están registradas.',
         'Uso.required' => 'El uso es obligatorio.',
     ];
@@ -62,8 +58,7 @@ class UnidadesCreate extends Component
                 'Marca' => $this->Marca,
                 'Submarca' => $this->Submarca,
                 'Anio' => $this->Anio,
-                'NoSerie' => strtoupper($this->NoSerie),
-                'Motor' => strtoupper($this->Motor),
+                'Motor' => $this->Motor ? strtoupper($this->Motor) : null,
                 'Placas' => $this->Placas ? strtoupper($this->Placas) : null,
                 'Color' => $this->Color,
                 'Uso' => $this->Uso,

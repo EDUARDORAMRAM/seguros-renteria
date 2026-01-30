@@ -112,48 +112,18 @@
                         🔖 Identificación
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {{-- VIN --}}
-                        <div>
+                        <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                VIN <span class="text-red-500">*</span>
+                                VIN (Número de Serie) <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
-                                   wire:model="VIN" 
+                            <input type="text"
+                                   wire:model="VIN"
                                    maxlength="50"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
                                    placeholder="Ej: 1HGBH41JXMN109186">
-                            @error('VIN') 
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        {{-- Número de Serie --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Número de Serie <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   wire:model="NoSerie" 
-                                   maxlength="50"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
-                                   placeholder="Número de serie">
-                            @error('NoSerie') 
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        {{-- Motor --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Motor
-                            </label>
-                            <input type="text" 
-                                   wire:model="Motor" 
-                                   maxlength="50"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
-                                   placeholder="Número de motor">
-                            @error('Motor') 
+                            @error('VIN')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -169,6 +139,21 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
                                    placeholder="Ej: ABC-123-D">
                             @error('Placas')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Motor --}}
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Motor
+                            </label>
+                            <input type="text"
+                                   wire:model="Motor"
+                                   maxlength="50"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
+                                   placeholder="Número de motor">
+                            @error('Motor')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

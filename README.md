@@ -113,7 +113,17 @@ Este comando creará todas las tablas necesarias y poblará la base de datos con
 - 5 unidades vehiculares
 - 20 pólizas de ejemplo
 
-### 8. Compilar Assets
+### 8. Crear Link Simbólico de Storage
+
+Este paso es **obligatorio** para que funcionen los archivos PDF de pólizas y endosos:
+
+```bash
+php artisan storage:link
+```
+
+> **Importante:** Este comando debe ejecutarse cada vez que se clone o copie el proyecto a una nueva ubicación.
+
+### 9. Compilar Assets
 
 Para desarrollo:
 
@@ -127,7 +137,7 @@ Para producción:
 npm run build
 ```
 
-### 9. Iniciar el Servidor
+### 10. Iniciar el Servidor
 
 ```bash
 php artisan serve
