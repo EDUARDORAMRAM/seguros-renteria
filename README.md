@@ -193,6 +193,28 @@ php artisan migrate:fresh --seed
 npm run dev
 ```
 
+### Corregir Pólizas Importadas
+
+Si importaste pólizas desde CSV y hay problemas con la forma de pago o las fechas, ejecuta:
+
+```bash
+php artisan polizas:corregir-importadas
+```
+
+Este comando corrige automáticamente:
+- **FormaPago**: Normaliza valores en mayúsculas (`ANUAL` → `Anual`, `TRIMESTRAL` → `Trimestral`, etc.)
+- **FechaInicio**: Si es igual o muy cercana a FechaVencimiento, la recalcula a 1 año antes del vencimiento
+
+### Corregir RFC a Mayúsculas
+
+Para convertir todos los RFC de asegurados a mayúsculas:
+
+```bash
+php artisan asegurados:rfc-mayusculas
+```
+
+> **Nota:** A partir de ahora, todos los RFC se guardarán automáticamente en mayúsculas gracias al mutator en el modelo Asegurado.
+
 ## Módulos del Sistema
 
 ### 📋 Pólizas

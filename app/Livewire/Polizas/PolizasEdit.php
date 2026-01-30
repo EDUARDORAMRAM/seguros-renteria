@@ -112,25 +112,31 @@ class PolizasEdit extends Component
         $rules = $this->rules;
         $rules['NumPoliza'] = 'required|unique:polizas,NumPoliza,' . $this->poliza->IdPoliza . ',IdPoliza';
 
-        $validated = $this->validate($rules);
+        try {
+            $validated = $this->validate($rules);
 
-        // Guardar PDF si se subió uno nuevo
-        if ($this->archivoPdf) {
-            // Eliminar PDF anterior si existe
-            $this->poliza->eliminarPdfAnterior();
-            
-            // Guardar nuevo PDF
-            $nombreArchivo = 'poliza_' . str_replace(['/', '-', ' '], '_', $this->NumPoliza) . '_' . time() . '.pdf';
-            $this->archivoPdf->storeAs('polizas', $nombreArchivo, 'public');
-            
-            $validated['ArchivoPDF'] = $nombreArchivo;
+            // Guardar PDF si se subió uno nuevo
+            if ($this->archivoPdf) {
+                // Eliminar PDF anterior si existe
+                $this->poliza->eliminarPdfAnterior();
+
+                // Guardar nuevo PDF
+                $nombreArchivo = 'poliza_' . str_replace(['/', '-', ' '], '_', $this->NumPoliza) . '_' . time() . '.pdf';
+                $this->archivoPdf->storeAs('polizas', $nombreArchivo, 'public');
+
+                $validated['ArchivoPDF'] = $nombreArchivo;
+            }
+
+            $this->poliza->update($validated);
+
+            session()->flash('message', 'Póliza actualizada exitosamente.');
+
+            return redirect()->route('polizas.show', $this->poliza);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al actualizar la póliza: ' . $e->getMessage());
         }
-
-        $this->poliza->update($validated);
-
-        session()->flash('message', 'Póliza actualizada exitosamente.');
-        
-        return redirect()->route('polizas.show', $this->poliza);
     }
 
     // Método para eliminar PDF

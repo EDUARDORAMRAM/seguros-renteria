@@ -27,6 +27,12 @@ class Asegurado extends Model
         'updated_at' => 'datetime',
     ];
 
+    // Mutator para RFC - siempre en mayúsculas
+    protected function setRfcAttribute($value)
+    {
+        $this->attributes['RFC'] = strtoupper(trim($value));
+    }
+
     // Relaciones
     public function polizas()
     {

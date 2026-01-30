@@ -5,3 +5,40 @@
 [x-cloak] {
     display: none;
 }
+
+/* Placeholders más sutiles para inputs */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+    color: #c0c5cc !important;
+    opacity: 0.7 !important;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Para navegadores webkit (Chrome, Safari, Edge) */
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: #c0c5cc !important;
+    opacity: 0.7 !important;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Para Firefox */
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+    color: #c0c5cc !important;
+    opacity: 0.7 !important;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Para IE/Edge antiguo */
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+    color: #c0c5cc !important;
+    opacity: 0.7 !important;
+    font-style: italic;
+    font-size: 0.9em;
+}

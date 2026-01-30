@@ -149,7 +149,7 @@ class ImportarExcel extends Component
 
                 $idExcel = (int) ($row[0] ?? 0);
                 $nombreCompleto = trim($row[1]);
-                $rfc = trim($row[2]);
+                $rfc = strtoupper(trim($row[2]));
                 $telefono = $this->limpiarTelefono($row[3] ?? '');
                 $email = trim($row[4] ?? '');
 
@@ -274,9 +274,18 @@ class ImportarExcel extends Component
                 }
 
                 $numPoliza = trim($row[1]);
-                $formaPago = strtoupper(trim($row[2] ?? 'ANUAL'));
-                $fechaInicio = $this->parsearFecha($row[3]);
-                $fechaVencimiento = $this->parsearFecha($row[4]);
+                $formaPago = $this->normalizarFormaPago($row[2] ?? 'ANUAL');
+                $fechaVencimiento = $this->parsearFecha($row[4] ?? '');
+
+                // Calcular fecha de inicio: si está vacía o inválida, restar 1 año al vencimiento
+                $fechaInicioRaw = trim($row[3] ?? '');
+                if (!empty($fechaInicioRaw)) {
+                    $fechaInicio = $this->parsearFecha($fechaInicioRaw);
+                } else {
+                    // Si no hay fecha de inicio, calcular 1 año antes del vencimiento
+                    $fechaInicio = $fechaVencimiento->copy()->subYear();
+                }
+
                 $prima = floatval($row[6] ?? 0);
                 $estatus = ucfirst(strtolower(trim($row[7] ?? 'Activa')));
                 
@@ -407,10 +416,39 @@ class ImportarExcel extends Component
         }
 
         try {
+            // Intentar formato d/m/Y (ej: 25/9/2025)
+            if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', trim($fecha))) {
+                return \Carbon\Carbon::createFromFormat('d/m/Y', trim($fecha));
+            }
+
+            // Intentar formato d-m-Y (ej: 25-09-2025)
+            if (preg_match('/^\d{1,2}-\d{1,2}-\d{4}$/', trim($fecha))) {
+                return \Carbon\Carbon::createFromFormat('d-m-Y', trim($fecha));
+            }
+
+            // Intentar formato Y-m-d (ej: 2025-09-25)
+            if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', trim($fecha))) {
+                return \Carbon\Carbon::createFromFormat('Y-m-d', trim($fecha));
+            }
+
+            // Fallback a Carbon::parse
             return \Carbon\Carbon::parse($fecha);
         } catch (\Exception $e) {
             return now();
         }
+    }
+
+    private function normalizarFormaPago($formaPago)
+    {
+        $formaPago = strtoupper(trim($formaPago));
+
+        return match($formaPago) {
+            'ANUAL' => 'Anual',
+            'SEMESTRAL' => 'Semestral',
+            'TRIMESTRAL' => 'Trimestral',
+            'MENSUAL' => 'Mensual',
+            default => 'Anual',
+        };
     }
 
     public function render()
