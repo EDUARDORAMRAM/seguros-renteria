@@ -35,6 +35,30 @@ class PolizasCreate extends Component
     public $mostrarModalAsegurado = false;
     public $mostrarModalUnidad = false;
 
+    // Listeners para actualizar datos cuando se crean nuevos registros
+    protected $listeners = [
+        'aseguradoCreado' => 'actualizarAsegurados',
+        'unidadCreada' => 'actualizarUnidades',
+    ];
+
+    public function actualizarAsegurados($idAsegurado = null)
+    {
+        $this->asegurados = Asegurado::orderBy('Nombre')->get();
+        if ($idAsegurado) {
+            $this->IdAsegurado = $idAsegurado;
+        }
+        $this->mostrarModalAsegurado = false;
+    }
+
+    public function actualizarUnidades($idUnidad = null)
+    {
+        $this->unidades = Unidad::orderBy('Marca')->get();
+        if ($idUnidad) {
+            $this->IdUnidad = $idUnidad;
+        }
+        $this->mostrarModalUnidad = false;
+    }
+
     protected $rules = [
         'NumPoliza' => 'required|unique:polizas,NumPoliza',
         'FormaPago' => 'required|in:Anual,Semestral,Trimestral,Mensual',
@@ -131,7 +155,7 @@ class PolizasCreate extends Component
         $this->validate();
 
         $poliza = Poliza::create([
-            'NumPoliza' => $this->NumPoliza,
+            'NumPoliza' => strtoupper($this->NumPoliza),
             'FormaPago' => $this->FormaPago,
             'FechaInicio' => $this->FechaInicio,
             'FechaVencimiento' => $this->FechaVencimiento,

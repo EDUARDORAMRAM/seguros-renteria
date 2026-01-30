@@ -131,6 +131,35 @@ class PolizasShow extends Component
         session()->flash('message', 'Póliza cancelada exitosamente.');
     }
 
+    public function eliminarPoliza()
+    {
+        // Solo permitir eliminar pólizas canceladas
+        if ($this->poliza->Estatus !== 'Cancelada') {
+            session()->flash('error', 'Solo se pueden eliminar pólizas canceladas.');
+            return;
+        }
+
+        try {
+            // Eliminar PDF si existe
+            $this->poliza->eliminarPdfAnterior();
+
+            // Eliminar fechas de cobranza asociadas
+            $this->poliza->fechasCobranza()->delete();
+
+            // Eliminar endosos asociados
+            $this->poliza->endosos()->delete();
+
+            // Eliminar la póliza
+            $this->poliza->delete();
+
+            session()->flash('message', 'Póliza eliminada exitosamente.');
+
+            return redirect()->route('polizas.index');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al eliminar la póliza: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         return view('livewire.polizas.polizas-show');

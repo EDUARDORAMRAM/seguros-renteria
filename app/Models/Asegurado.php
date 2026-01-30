@@ -27,10 +27,25 @@ class Asegurado extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Mutator para RFC - siempre en mayúsculas
+    // Mutators para guardar en mayúsculas
     protected function setRfcAttribute($value)
     {
         $this->attributes['RFC'] = strtoupper(trim($value));
+    }
+
+    protected function setNombreAttribute($value)
+    {
+        $this->attributes['Nombre'] = mb_strtoupper(trim($value));
+    }
+
+    protected function setApellidoPaternoAttribute($value)
+    {
+        $this->attributes['ApellidoPaterno'] = mb_strtoupper(trim($value));
+    }
+
+    protected function setApellidoMaternoAttribute($value)
+    {
+        $this->attributes['ApellidoMaterno'] = mb_strtoupper(trim($value));
     }
 
     // Relaciones
@@ -63,5 +78,30 @@ class Asegurado extends Model
     public function getNombreCompletoAttribute()
     {
         return trim("{$this->Nombre} {$this->ApellidoPaterno} {$this->ApellidoMaterno}");
+    }
+
+    // Accessor para iniciales
+    public function getInicialesAttribute()
+    {
+        $iniciales = '';
+        if ($this->Nombre) {
+            $iniciales .= mb_substr($this->Nombre, 0, 1);
+        }
+        if ($this->ApellidoPaterno) {
+            $iniciales .= mb_substr($this->ApellidoPaterno, 0, 1);
+        }
+        return mb_strtoupper($iniciales);
+    }
+
+    // Accessor para contar pólizas totales
+    public function getPolizasCountAttribute()
+    {
+        return $this->polizas()->count();
+    }
+
+    // Accessor para contar pólizas activas
+    public function getPolizasActivasCountAttribute()
+    {
+        return $this->polizasActivas()->count();
     }
 }

@@ -223,7 +223,15 @@ Para convertir todos los RFC de asegurados a mayúsculas:
 php artisan asegurados:rfc-mayusculas
 ```
 
-> **Nota:** A partir de ahora, todos los RFC se guardarán automáticamente en mayúsculas gracias al mutator en el modelo Asegurado.
+### Convertir Datos a Mayúsculas
+
+Para convertir nombres de asegurados y números de póliza a mayúsculas:
+
+```bash
+php artisan datos:mayusculas
+```
+
+> **Nota:** A partir de ahora, todos los RFC, nombres de asegurados y números de póliza se guardarán automáticamente en mayúsculas.
 
 ## Módulos del Sistema
 

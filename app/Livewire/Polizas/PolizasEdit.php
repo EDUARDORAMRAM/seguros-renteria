@@ -33,8 +33,28 @@ class PolizasEdit extends Component
     public $asegurados;
     public $unidades;
 
-    // Listener para refrescar cuando se cree un endoso
-    protected $listeners = ['endosoCreado' => '$refresh'];
+    // Listeners
+    protected $listeners = [
+        'endosoCreado' => '$refresh',
+        'aseguradoCreado' => 'actualizarAsegurados',
+        'unidadCreada' => 'actualizarUnidades',
+    ];
+
+    public function actualizarAsegurados($idAsegurado = null)
+    {
+        $this->asegurados = Asegurado::orderBy('Nombre')->get();
+        if ($idAsegurado) {
+            $this->IdAsegurado = $idAsegurado;
+        }
+    }
+
+    public function actualizarUnidades($idUnidad = null)
+    {
+        $this->unidades = Unidad::orderBy('Marca')->get();
+        if ($idUnidad) {
+            $this->IdUnidad = $idUnidad;
+        }
+    }
 
     protected $rules = [
         'NumPoliza' => 'required|unique:polizas,NumPoliza',
@@ -113,6 +133,9 @@ class PolizasEdit extends Component
         $rules['NumPoliza'] = 'required|unique:polizas,NumPoliza,' . $this->poliza->IdPoliza . ',IdPoliza';
 
         try {
+            // Convertir NumPoliza a mayúsculas
+            $this->NumPoliza = strtoupper($this->NumPoliza);
+
             $validated = $this->validate($rules);
 
             // Guardar PDF si se subió uno nuevo

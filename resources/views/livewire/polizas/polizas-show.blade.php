@@ -52,6 +52,17 @@
                             Renovar
                         </button>
                     @endif
+                    @if ($poliza->Estatus === 'Cancelada')
+                        <button wire:click="eliminarPoliza"
+                            wire:confirm="¿Estás seguro de eliminar esta póliza? Esta acción no se puede deshacer."
+                            class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Eliminar
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -455,7 +466,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            {{-- Columna Lateral: Asegurado y Unidad --}}
+            <div class="lg:col-span-1 space-y-6">
                 {{-- Unidad Asegurada --}}
                 <div class="bg-white rounded-lg shadow-lg p-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
@@ -466,30 +480,44 @@
                         </svg>
                         Unidad Asegurada
                     </h3>
-                    <div class="grid grid-cols-2 gap-4">
+
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-4-1a1 1 0 001 1h4M8 17a5 5 0 10-8 0h8z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-base font-bold text-gray-900 text-center">
+                            {{ $poliza->unidad->descripcion_completa ?? 'N/A' }}
+                        </h4>
+                    </div>
+
+                    <div class="space-y-3 border-t pt-4">
                         <div>
-                            <label class="text-xs font-semibold text-gray-500 uppercase">Vehículo</label>
-                            <p class="text-base font-medium text-gray-900 mt-1">
-                                {{ $poliza->unidad->descripcion_completa ?? 'N/A' }}</p>
+                            <label class="text-xs font-semibold text-gray-500 uppercase">VIN</label>
+                            <p class="text-sm font-medium text-gray-900 mt-1 font-mono">{{ $poliza->unidad->VIN ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-gray-500 uppercase">Placas</label>
-                            <p class="text-base font-medium text-gray-900 mt-1">{{ $poliza->unidad->Placas ?? 'N/A' }}</p>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-gray-500 uppercase">VIN</label>
-                            <p class="text-base font-medium text-gray-900 mt-1">{{ $poliza->unidad->VIN ?? 'N/A' }}</p>
+                            <p class="text-sm font-medium text-gray-900 mt-1">{{ $poliza->unidad->Placas ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-gray-500 uppercase">Color</label>
-                            <p class="text-base font-medium text-gray-900 mt-1">{{ $poliza->unidad->Color ?? 'N/A' }}</p>
+                            <p class="text-sm font-medium text-gray-900 mt-1">{{ $poliza->unidad->Color ?? 'N/A' }}</p>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {{-- Columna Lateral: Asegurado --}}
-            <div class="lg:col-span-1">
+                    <div class="mt-4 pt-4 border-t">
+                        <a href="{{ route('unidades.show', $poliza->IdUnidad) }}"
+                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition text-sm">
+                            Ver Unidad
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Asegurado --}}
                 <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
