@@ -17,7 +17,7 @@ class PolizasCreate extends Component
     public $FormaPago = 'Anual';
     public $FechaInicio;
     public $FechaVencimiento;
-    public $Prima;
+    public $Prima = 0; // Se calculará después desde los montos de cobranza
     public $Estatus = 'Activa';
     public $IdCompania;
     public $IdAsegurado;
@@ -64,7 +64,7 @@ class PolizasCreate extends Component
         'FormaPago' => 'required|in:Anual,Semestral,Trimestral,Mensual',
         'FechaInicio' => 'required|date',
         'FechaVencimiento' => 'required|date|after:FechaInicio',
-        'Prima' => 'required|numeric|min:0',
+        'Prima' => 'nullable|numeric|min:0', // Se calculará después desde los montos
         'Estatus' => 'required|in:Activa,Vencida,Cancelada',
         'IdCompania' => 'required|exists:companias,IdCompania',
         'IdAsegurado' => 'required|exists:asegurados,IdAsegurado',
@@ -76,8 +76,6 @@ class PolizasCreate extends Component
         'NumPoliza.required' => 'El número de póliza es obligatorio',
         'NumPoliza.unique' => 'Este número de póliza ya existe',
         'FechaVencimiento.after' => 'La fecha de vencimiento debe ser posterior a la fecha de inicio',
-        'Prima.required' => 'La prima es obligatoria',
-        'Prima.min' => 'La prima debe ser mayor a 0',
     ];
 
     public function mount()
@@ -176,13 +174,14 @@ class PolizasCreate extends Component
         }
 
         // ═══════════════════════════════════════════════════════════
-        // GENERAR FECHAS DE COBRANZA
+        // GENERAR FECHAS DE COBRANZA (con montos en 0)
         // ═══════════════════════════════════════════════════════════
         $poliza->generarFechasCobranza();
 
-        session()->flash('message', 'Póliza creada exitosamente con ' . count($this->fechasCobranzaPreview) . ' fechas de cobranza.');
-        
-        return redirect()->route('polizas.index');
+        session()->flash('message', 'Póliza creada exitosamente con ' . count($this->fechasCobranzaPreview) . ' fechas de cobranza. Configure los montos desde la opción Editar.');
+
+        // Redirigir a editar para que configure los montos
+        return redirect()->route('polizas.edit', $poliza->IdPoliza);
     }
 
     public function render()

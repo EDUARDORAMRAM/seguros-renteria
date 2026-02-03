@@ -18,12 +18,17 @@ class PolizasEdit extends Component
     public $FormaPago;
     public $FechaInicio;
     public $FechaVencimiento;
-    public $FechaCobranza; // ← NUEVO
+    public $FechaCobranza;
     public $Prima;
     public $Estatus;
     public $IdCompania;
     public $IdAsegurado;
     public $IdUnidad;
+
+    // Para montos de cobranza
+    public $montoPrimerPago = 0;
+    public $montoSegundoPago = 0;
+    public $mostrarSeccionMontos = false;
 
     // Para PDF
     public $archivoPdf;
@@ -58,11 +63,11 @@ class PolizasEdit extends Component
 
     protected $rules = [
         'NumPoliza' => 'required|unique:polizas,NumPoliza',
-        'FormaPago' => 'required|in:Anual,Semestral,Trimestral,Mensual', // ← AGREGADO Trimestral
+        'FormaPago' => 'required|in:Anual,Semestral,Trimestral,Mensual',
         'FechaInicio' => 'required|date',
         'FechaVencimiento' => 'required|date|after:FechaInicio',
-        'FechaCobranza' => 'nullable|date|after_or_equal:FechaInicio', // ← NUEVO
-        'Prima' => 'required|numeric|min:0',
+        'FechaCobranza' => 'nullable|date|after_or_equal:FechaInicio',
+        'Prima' => 'nullable|numeric|min:0', // Se calcula desde los montos de cobranza
         'Estatus' => 'required|in:Activa,Vencida,Cancelada',
         'IdCompania' => 'required|exists:companias,IdCompania',
         'IdAsegurado' => 'required|exists:asegurados,IdAsegurado',
@@ -90,13 +95,32 @@ class PolizasEdit extends Component
         $this->FormaPago = $this->poliza->FormaPago;
         $this->FechaInicio = $this->poliza->FechaInicio->format('Y-m-d');
         $this->FechaVencimiento = $this->poliza->FechaVencimiento->format('Y-m-d');
-        $this->FechaCobranza = $this->poliza->FechaCobranza ? $this->poliza->FechaCobranza->format('Y-m-d') : null; // ← NUEVO
+        $this->FechaCobranza = $this->poliza->FechaCobranza ? $this->poliza->FechaCobranza->format('Y-m-d') : null;
         $this->Prima = $this->poliza->Prima;
         $this->Estatus = $this->poliza->Estatus;
         $this->IdCompania = $this->poliza->IdCompania;
         $this->IdAsegurado = $this->poliza->IdAsegurado;
         $this->IdUnidad = $this->poliza->IdUnidad;
         $this->pdfActual = $this->poliza->ArchivoPDF;
+
+        // Cargar montos de cobranza existentes
+        $this->cargarMontosCobranza();
+    }
+
+    public function cargarMontosCobranza()
+    {
+        $fechas = $this->poliza->fechasCobranza()->orderBy('FechaCobranza', 'asc')->get();
+
+        if ($fechas->count() > 0) {
+            $this->montoPrimerPago = $fechas->first()->MontoCobro ?? 0;
+
+            if ($fechas->count() > 1) {
+                $this->montoSegundoPago = $fechas->skip(1)->first()->MontoCobro ?? 0;
+            }
+
+            // Mostrar sección de montos si hay fechas de cobranza
+            $this->mostrarSeccionMontos = true;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -125,6 +149,47 @@ class PolizasEdit extends Component
     public function updatedFechaInicio($value)
     {
         $this->updatedFormaPago($this->FormaPago);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ACTUALIZAR MONTOS DE COBRANZA
+    // ═══════════════════════════════════════════════════════════
+    public function actualizarMontos()
+    {
+        $this->validate([
+            'montoPrimerPago' => 'required|numeric|min:0',
+            'montoSegundoPago' => 'required|numeric|min:0',
+        ], [
+            'montoPrimerPago.required' => 'El monto del primer pago es obligatorio',
+            'montoPrimerPago.min' => 'El monto no puede ser negativo',
+            'montoSegundoPago.required' => 'El monto del segundo pago es obligatorio',
+            'montoSegundoPago.min' => 'El monto no puede ser negativo',
+        ]);
+
+        // Actualizar montos en la base de datos
+        $nuevaPrima = $this->poliza->actualizarMontosCobranza(
+            $this->montoPrimerPago,
+            $this->montoSegundoPago
+        );
+
+        // Recargar la póliza para obtener datos actualizados
+        $this->poliza->refresh();
+
+        // Actualizar la prima en el formulario
+        $this->Prima = $nuevaPrima;
+
+        session()->flash('message', 'Montos de cobranza actualizados. Prima total: $' . number_format($nuevaPrima, 2));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // GENERAR/REGENERAR FECHAS DE COBRANZA
+    // ═══════════════════════════════════════════════════════════
+    public function regenerarFechasCobranza()
+    {
+        $this->poliza->generarFechasCobranza();
+        $this->cargarMontosCobranza();
+
+        session()->flash('message', 'Fechas de cobranza regeneradas. Por favor, configure los montos.');
     }
 
     public function actualizar()

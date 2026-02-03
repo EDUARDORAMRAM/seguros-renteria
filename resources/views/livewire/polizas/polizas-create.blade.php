@@ -83,25 +83,6 @@
                         @enderror
                     </div>
 
-                    {{-- Prima --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Prima Total <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                            <input type="number" 
-                                   wire:model="Prima" 
-                                   step="0.01"
-                                   min="0"
-                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                                   placeholder="0.00">
-                        </div>
-                        @error('Prima') 
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     {{-- Estatus --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -139,7 +120,7 @@
                             <h3 class="text-sm font-bold {{ $validacionFechas['valido'] ? 'text-green-800' : 'text-red-800' }}">
                                 {{ $validacionFechas['mensaje'] }}
                             </h3>
-                            
+
                             @if($validacionFechas['valido'] && count($fechasCobranzaPreview) > 0)
                                 <div class="mt-3">
                                     <p class="text-xs font-semibold text-gray-700 mb-2">
@@ -152,14 +133,15 @@
                                                 <p class="text-sm font-semibold text-gray-900">
                                                     {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}
                                                 </p>
-                                                @if($Prima > 0)
-                                                    <p class="text-xs text-gray-600">
-                                                        ${{ number_format($Prima / count($fechasCobranzaPreview), 2) }}
-                                                    </p>
-                                                @endif
+                                                <p class="text-xs text-gray-500">
+                                                    Monto pendiente
+                                                </p>
                                             </div>
                                         @endforeach
                                     </div>
+                                    <p class="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                        Los montos de cada pago se configurarán al editar la póliza después de crearla.
+                                    </p>
                                 </div>
                             @endif
                         </div>

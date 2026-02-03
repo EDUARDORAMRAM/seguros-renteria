@@ -318,8 +318,10 @@ class Poliza extends Model
 
     // ═══════════════════════════════════════════════════════════
     // GENERAR fechas de cobranza al crear póliza
+    // $marcarPasadasComoPagadas: true para importaciones (fechas pasadas = Pagado)
+    // $calcularMontos: true para dividir la prima entre los pagos
     // ═══════════════════════════════════════════════════════════
-    public function generarFechasCobranza()
+    public function generarFechasCobranza($marcarPasadasComoPagadas = false, $calcularMontos = false)
     {
         // Eliminar fechas anteriores si existen
         $this->fechasCobranza()->delete();
@@ -330,17 +332,63 @@ class Poliza extends Model
             $this->FormaPago
         );
 
-        // Calcular monto por cobro
-        $montoPorCobro = count($fechas) > 0 ? $this->Prima / count($fechas) : $this->Prima;
+        $hoy = now()->startOfDay();
+        $numPagos = count($fechas);
+
+        // Calcular monto por pago si se solicita y hay prima
+        $montoPorPago = 0;
+        if ($calcularMontos && $this->Prima > 0 && $numPagos > 0) {
+            $montoPorPago = round($this->Prima / $numPagos, 2);
+        }
 
         foreach ($fechas as $fecha) {
+            $fechaCobranza = \Carbon\Carbon::parse($fecha);
+
+            // Determinar estatus según si la fecha ya pasó
+            $estatus = 'Pendiente';
+            $fechaPago = null;
+            $observaciones = null;
+
+            if ($marcarPasadasComoPagadas && $fechaCobranza->lt($hoy)) {
+                $estatus = 'Pagado';
+                $fechaPago = $fechaCobranza;
+                $observaciones = 'Pago anterior (importación)';
+            }
+
             FechaCobranza::create([
                 'IdPoliza' => $this->IdPoliza,
                 'FechaCobranza' => $fecha,
-                'MontoCobro' => round($montoPorCobro, 2),
-                'Estatus' => 'Pendiente',
+                'MontoCobro' => $montoPorPago,
+                'Estatus' => $estatus,
+                'FechaPago' => $fechaPago,
+                'Observaciones' => $observaciones,
             ]);
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ACTUALIZAR montos de cobranza (primer pago, segundo pago, resto)
+    // ═══════════════════════════════════════════════════════════
+    public function actualizarMontosCobranza($montoPrimerPago, $montoSegundoPago)
+    {
+        $fechas = $this->fechasCobranza()->orderBy('FechaCobranza', 'asc')->get();
+
+        foreach ($fechas as $index => $fecha) {
+            if ($index === 0) {
+                // Primer pago
+                $fecha->MontoCobro = $montoPrimerPago;
+            } else {
+                // Segundo pago y todos los siguientes
+                $fecha->MontoCobro = $montoSegundoPago;
+            }
+            $fecha->save();
+        }
+
+        // Recalcular y actualizar la prima total
+        $this->Prima = $this->fechasCobranza()->sum('MontoCobro');
+        $this->save();
+
+        return $this->Prima;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -361,5 +409,23 @@ class Poliza extends Model
             ->where('Estatus', 'Pendiente')
             ->where('FechaCobranza', '<', now())
             ->count();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CORREGIR: Marcar fechas de cobranza pasadas como Pagadas
+    // ═══════════════════════════════════════════════════════════
+    public static function corregirCobranzasPasadas()
+    {
+        $hoy = now()->startOfDay();
+
+        $actualizados = FechaCobranza::where('Estatus', 'Pendiente')
+            ->whereDate('FechaCobranza', '<', $hoy)
+            ->update([
+                'Estatus' => 'Pagado',
+                'FechaPago' => \DB::raw('FechaCobranza'),
+                'Observaciones' => 'Pago anterior (corrección automática)',
+            ]);
+
+        return $actualizados;
     }
 }

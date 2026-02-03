@@ -147,6 +147,23 @@
 
                     <div class="p-6">
                         @if($poliza->fechasCobranza->count() > 0)
+                            {{-- Aviso si hay montos en $0 --}}
+                            @if($poliza->fechasCobranza->where('MontoCobro', 0)->count() > 0)
+                                <div class="mb-4 p-4 bg-orange-50 border-2 border-orange-300 rounded-lg flex items-center gap-4">
+                                    <svg class="w-8 h-8 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="font-bold text-orange-800">Montos pendientes de configurar</p>
+                                        <p class="text-sm text-orange-700">Hay {{ $poliza->fechasCobranza->where('MontoCobro', 0)->count() }} pago(s) sin monto asignado. Configure los montos para calcular la prima total.</p>
+                                    </div>
+                                    <a href="{{ route('polizas.edit', $poliza->IdPoliza) }}"
+                                       class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition whitespace-nowrap">
+                                        Configurar Montos
+                                    </a>
+                                </div>
+                            @endif
+
                             <div class="space-y-3">
                                 @foreach($poliza->fechasCobranza as $index => $fechaCobro)
                                     @php
@@ -230,12 +247,21 @@
                                         {{-- Monto y Acciones --}}
                                         <div class="flex items-center space-x-4">
                                             <div class="text-right">
-                                                <p class="text-2xl font-bold text-green-600">
-                                                    ${{ number_format($fechaCobro->MontoCobro, 2) }}
-                                                </p>
-                                                <p class="text-xs text-gray-500">
-                                                    MXN
-                                                </p>
+                                                @if($fechaCobro->MontoCobro > 0)
+                                                    <p class="text-2xl font-bold text-green-600">
+                                                        ${{ number_format($fechaCobro->MontoCobro, 2) }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        MXN
+                                                    </p>
+                                                @else
+                                                    <p class="text-lg font-bold text-orange-500">
+                                                        Por configurar
+                                                    </p>
+                                                    <a href="{{ route('polizas.edit', $poliza->IdPoliza) }}" class="text-xs text-blue-600 hover:underline">
+                                                        Configurar monto
+                                                    </a>
+                                                @endif
                                             </div>
 
                                             {{-- Botones de Acción --}}

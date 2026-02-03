@@ -317,9 +317,13 @@ class ImportarExcel extends Component
                     'IdUnidad' => $idUnidad,
                 ]);
 
-                if ($prima > 0) {
-                    $poliza->generarFechasCobranza();
-                }
+                // Generar fechas de cobranza:
+                // - Marcar fechas pasadas como "Pagado"
+                // - Calcular montos si hay prima
+                $poliza->generarFechasCobranza(
+                    true,  // marcarPasadasComoPagadas
+                    true   // calcularMontos (dividir prima entre pagos)
+                );
 
                 $importados++;
                 

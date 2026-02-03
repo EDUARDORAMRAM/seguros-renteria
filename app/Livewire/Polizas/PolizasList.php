@@ -63,17 +63,26 @@ class PolizasList extends Component
         }
     }
 
-    // Método para eliminar
+    // Método para eliminar (solo pólizas canceladas)
     public function eliminar($polizaId)
     {
         $poliza = Poliza::find($polizaId);
-        
-        if ($poliza) {
-            $poliza->delete();
-            
-            session()->flash('message', 'Póliza eliminada exitosamente.');
-            $this->emit('polizaEliminada');
+
+        if (!$poliza) {
+            session()->flash('error', 'Póliza no encontrada.');
+            return;
         }
+
+        // Solo permitir eliminar pólizas canceladas
+        if ($poliza->Estatus !== 'Cancelada') {
+            session()->flash('error', 'Solo se pueden eliminar pólizas con estatus "Cancelada".');
+            return;
+        }
+
+        $poliza->delete();
+
+        session()->flash('message', 'Póliza eliminada exitosamente.');
+        $this->dispatch('polizaEliminada');
     }
 
     // Render

@@ -6,14 +6,19 @@ use App\Models\Poliza;
 use App\Models\Asegurado;
 use App\Models\Compania;
 use App\Models\Unidad;
-use App\Models\FechaCobranza; // ← AGREGAR
+use App\Models\FechaCobranza;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
 class Dashboard extends Component
 {
+    use WithPagination;
+
     // Refrescar automáticamente cada 60 segundos
     protected $listeners = ['polizaCreada' => '$refresh', 'polizaActualizada' => '$refresh'];
+
+    protected $paginationTheme = 'tailwind';
 
     public function mount()
     {
@@ -48,7 +53,7 @@ class Dashboard extends Component
         return Poliza::with(['asegurado', 'compania', 'unidad'])
             ->proximasAVencer(30)
             ->orderBy('FechaVencimiento', 'asc')
-            ->get();
+            ->paginate(10, ['*'], 'vencerPage');
     }
 
     // ═══════════════════════════════════════════════════════════

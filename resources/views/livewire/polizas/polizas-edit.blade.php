@@ -136,23 +136,23 @@
                             </p>
                         </div>
 
-                        {{-- Prima --}}
+                        {{-- Prima (Solo lectura - se calcula automáticamente) --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Prima <span class="text-red-500">*</span>
+                                Prima Total
                             </label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                                <input type="number" 
-                                       wire:model="Prima" 
+                                <input type="number"
+                                       wire:model="Prima"
                                        step="0.01"
                                        min="0"
-                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                                       placeholder="0.00">
+                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 font-bold"
+                                       readonly>
                             </div>
-                            @error('Prima') 
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                Se calcula automáticamente desde los montos de cobranza
+                            </p>
                         </div>
 
                         {{-- Estatus --}}
@@ -247,6 +247,136 @@
                         @enderror
                     </div>
                 </div>
+
+                {{-- ═══════════════════════════════════════════════════════════ --}}
+                {{-- SECCIÓN: MONTOS DE COBRANZA --}}
+                {{-- ═══════════════════════════════════════════════════════════ --}}
+                @if($mostrarSeccionMontos)
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Configurar Montos de Cobranza
+                    </h3>
+
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <p class="text-sm text-gray-600 mb-2">
+                            <strong>Instrucciones:</strong> Configure el monto del primer pago y del segundo pago.
+                            Todos los pagos posteriores al segundo tendrán el mismo monto que el segundo pago.
+                        </p>
+                        <p class="text-xs text-blue-600">
+                            Número de pagos programados: <strong>{{ $poliza->fechasCobranza->count() }}</strong>
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        {{-- Monto Primer Pago --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Monto Primer Pago <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                                <input type="number"
+                                       wire:model="montoPrimerPago"
+                                       step="0.01"
+                                       min="0"
+                                       class="w-full pl-8 pr-3 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold"
+                                       placeholder="0.00">
+                            </div>
+                            @error('montoPrimerPago')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                Generalmente incluye gastos de expedición
+                            </p>
+                        </div>
+
+                        {{-- Monto Segundo Pago (y siguientes) --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Monto Segundo Pago (y siguientes) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                                <input type="number"
+                                       wire:model="montoSegundoPago"
+                                       step="0.01"
+                                       min="0"
+                                       class="w-full pl-8 pr-3 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg font-semibold"
+                                       placeholder="0.00">
+                            </div>
+                            @error('montoSegundoPago')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                Este monto se aplicará al pago 2, 3, 4... etc.
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Preview de la Prima Total --}}
+                    @php
+                        $numPagos = $poliza->fechasCobranza->count();
+                        $primaCalculada = $montoPrimerPago + ($montoSegundoPago * max(0, $numPagos - 1));
+                    @endphp
+                    <div class="bg-green-50 border-2 border-green-300 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Prima Total Calculada:</p>
+                                <p class="text-xs text-gray-500">
+                                    (${{ number_format($montoPrimerPago, 2) }} × 1) + (${{ number_format($montoSegundoPago, 2) }} × {{ max(0, $numPagos - 1) }})
+                                </p>
+                            </div>
+                            <p class="text-3xl font-bold text-green-600">
+                                ${{ number_format($primaCalculada, 2) }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Botón Actualizar Montos --}}
+                    <div class="flex items-center gap-4">
+                        <button type="button"
+                                wire:click="actualizarMontos"
+                                wire:loading.attr="disabled"
+                                class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
+                            <svg wire:loading.remove wire:target="actualizarMontos" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <svg wire:loading wire:target="actualizarMontos" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Guardar Montos de Cobranza
+                        </button>
+
+                        <button type="button"
+                                wire:click="regenerarFechasCobranza"
+                                wire:confirm="¿Estás seguro? Esto eliminará las fechas actuales y generará nuevas con monto $0"
+                                class="px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition text-sm">
+                            Regenerar Fechas
+                        </button>
+                    </div>
+                </div>
+                @else
+                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-6">
+                    <div class="flex items-center gap-4">
+                        <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-yellow-800">No hay fechas de cobranza</h4>
+                            <p class="text-sm text-yellow-700">Esta póliza no tiene fechas de cobranza configuradas.</p>
+                        </div>
+                        <button type="button"
+                                wire:click="regenerarFechasCobranza"
+                                class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition">
+                            Generar Fechas
+                        </button>
+                    </div>
+                </div>
+                @endif
 
                 {{-- Documento PDF --}}
                 <div>
