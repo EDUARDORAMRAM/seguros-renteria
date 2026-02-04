@@ -48,9 +48,9 @@ Route::middleware([
 
     // Reportes - Livewire Components
     Route::prefix('reportes')->name('reportes.')->group(function () {
-        Route::get('/ventas', \App\Livewire\Reportes\ReporteVentas::class)->name('ventas');
-        Route::get('/renovaciones', \App\Livewire\Reportes\ReporteRenovaciones::class)->name('renovaciones');
-        Route::get('/comisiones', \App\Livewire\Reportes\ReporteComisiones::class)->name('comisiones');
+        Route::get('/', \App\Livewire\Reportes\ReportesIndex::class)->name('index');
+        Route::get('/asegurado', \App\Livewire\Reportes\ReporteAsegurado::class)->name('asegurado');
+        Route::get('/asegurado/pdf/{asegurado}/{estatus}', [\App\Http\Controllers\ReportePdfController::class, 'asegurado'])->name('asegurado.pdf');
     });
 
     Route::get('/endosos/{id}', \App\Livewire\Endosos\EndosoShow::class)
