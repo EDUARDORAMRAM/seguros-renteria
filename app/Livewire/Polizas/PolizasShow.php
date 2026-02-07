@@ -148,15 +148,8 @@ class PolizasShow extends Component
             $nuevaFechaInicio = $this->poliza->FechaVencimiento->copy();
             $nuevaFechaVencimiento = $nuevaFechaInicio->copy()->addYear();
 
-            // Calcular primera fecha de cobranza según forma de pago
-            $mesesIntervalo = match($this->poliza->FormaPago) {
-                'Mensual' => 1,
-                'Trimestral' => 3,
-                'Semestral' => 6,
-                'Anual' => 12,
-                default => 12,
-            };
-            $nuevaFechaCobranza = $nuevaFechaInicio->copy()->addMonths($mesesIntervalo);
+            // Primera fecha de cobranza: 1 mes después del inicio
+            $nuevaFechaCobranza = $nuevaFechaInicio->copy()->addMonth();
 
             // Actualizar la póliza
             $this->poliza->FechaInicio = $nuevaFechaInicio;

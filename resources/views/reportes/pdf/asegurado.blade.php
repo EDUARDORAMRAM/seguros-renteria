@@ -177,12 +177,27 @@
         }
         
         .pago-v {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .pago-m {
             color: #16a34a;
             font-weight: bold;
         }
-        
+
         .pago-t {
             color: #d97706;
+            font-weight: bold;
+        }
+
+        .pago-s {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .pago-a {
+            color: #7c3aed;
             font-weight: bold;
         }
         
@@ -343,10 +358,14 @@
                         <td class="col-mes">
                             @if($poliza->mesesPago[$mes] === 'V')
                                 <span class="pago-v">V</span>
+                            @elseif($poliza->mesesPago[$mes] === 'M')
+                                <span class="pago-m">M</span>
                             @elseif($poliza->mesesPago[$mes] === 'T')
                                 <span class="pago-t">T</span>
-                            @else
-                                
+                            @elseif($poliza->mesesPago[$mes] === 'S')
+                                <span class="pago-s">S</span>
+                            @elseif($poliza->mesesPago[$mes] === 'A')
+                                <span class="pago-a">A</span>
                             @endif
                         </td>
                     @endforeach

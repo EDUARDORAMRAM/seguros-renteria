@@ -223,7 +223,6 @@ class Poliza extends Model
     public static function calcularFechasCobranza($fechaInicio, $fechaVencimiento, $formaPago)
     {
         $fechas = [];
-        $fechaActual = \Carbon\Carbon::parse($fechaInicio);
         $fechaFin = \Carbon\Carbon::parse($fechaVencimiento);
 
         // Calcular intervalo según forma de pago
@@ -235,24 +234,14 @@ class Poliza extends Model
             default => 12,
         };
 
+        // Primera fecha de cobranza: 1 mes después del inicio
+        // Las siguientes fechas usan el intervalo normal de la forma de pago
+        $fechaActual = \Carbon\Carbon::parse($fechaInicio)->addMonth();
+
         // Generar fechas de cobranza
         while ($fechaActual->lte($fechaFin)) {
-            $proximaFecha = $fechaActual->copy()->addMonths($mesesIntervalo);
-            
-            // Si la próxima fecha supera el vencimiento, usar fecha de vencimiento
-            if ($proximaFecha->gt($fechaFin)) {
-                $proximaFecha = $fechaFin->copy();
-            }
-            
-            $fechas[] = $proximaFecha->format('Y-m-d');
-            
-            // Avanzar
-            $fechaActual = $proximaFecha->copy();
-            
-            // Evitar loop infinito
-            if ($fechaActual->gte($fechaFin)) {
-                break;
-            }
+            $fechas[] = $fechaActual->format('Y-m-d');
+            $fechaActual = $fechaActual->copy()->addMonths($mesesIntervalo);
         }
 
         return $fechas;

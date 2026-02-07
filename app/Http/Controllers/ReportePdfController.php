@@ -47,25 +47,40 @@ class ReportePdfController extends Controller
                 'E' => '', 'F' => '', 'M' => '', 'A' => '', 'MY' => '', 'J' => '',
                 'JL' => '', 'AG' => '', 'S' => '', 'O' => '', 'N' => '', 'D' => ''
             ];
-            
+
             $mesMap = [
                 1 => 'E', 2 => 'F', 3 => 'M', 4 => 'A', 5 => 'MY', 6 => 'J',
                 7 => 'JL', 8 => 'AG', 9 => 'S', 10 => 'O', 11 => 'N', 12 => 'D'
             ];
-            
+
+            // Letra según forma de pago: M=Mensual, T=Trimestral, S=Semestral, A=Anual
+            $letraFormaPago = match($poliza->FormaPago) {
+                'Mensual' => 'M',
+                'Trimestral' => 'T',
+                'Semestral' => 'S',
+                'Anual' => 'A',
+                default => 'A',
+            };
+
+            // Marcar meses de pago con la letra de la forma de pago
             foreach ($poliza->fechasCobranza as $pago) {
                 $mes = $pago->FechaCobranza->month;
                 $letra = $mesMap[$mes] ?? '';
-                
+
                 if ($letra) {
-                    if ($pago->Estatus === 'Pagado') {
-                        $meses[$letra] = 'V'; // Verde/Pagado
-                    } else {
-                        $meses[$letra] = 'T'; // Amarillo/Pendiente
-                    }
+                    $meses[$letra] = $letraFormaPago;
                 }
             }
-            
+
+            // Marcar el mes de vencimiento con V
+            if ($poliza->FechaVencimiento) {
+                $mesVencimiento = $poliza->FechaVencimiento->month;
+                $letraVenc = $mesMap[$mesVencimiento] ?? '';
+                if ($letraVenc) {
+                    $meses[$letraVenc] = 'V';
+                }
+            }
+
             $poliza->mesesPago = $meses;
             return $poliza;
         });

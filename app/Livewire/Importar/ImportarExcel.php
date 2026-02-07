@@ -159,10 +159,6 @@ class ImportarExcel extends Component
                     throw new \Exception("RFC duplicado: {$rfc}");
                 }
 
-                if (!empty($email) && Asegurado::where('Email', $email)->exists()) {
-                    throw new \Exception("Email duplicado: {$email}");
-                }
-
                 $asegurado = Asegurado::create([
                     'Nombre' => $partes['nombre'],
                     'ApellidoPaterno' => $partes['apellido_paterno'],
