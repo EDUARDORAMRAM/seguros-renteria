@@ -10,224 +10,221 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 10px;
-            color: #333;
-            line-height: 1.4;
+            font-size: 7px;
+            color: #000;
+            line-height: 1.2;
         }
+        
         .page {
-            padding: 20px 30px;
+            padding: 15px;
         }
-        /* Header */
+        
+        /* Header con Logo */
         .header {
+            margin-bottom: 10px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 8px;
+        }
+        
+        .header-content {
             display: table;
             width: 100%;
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
         }
+        
         .header-left {
             display: table-cell;
-            vertical-align: middle;
             width: 70%;
+            vertical-align: top;
         }
+        
         .header-right {
             display: table-cell;
-            vertical-align: middle;
-            text-align: right;
-            width: 30%;
-        }
-        .logo {
-            max-height: 50px;
-            max-width: 150px;
-        }
-        .report-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1e3a5f;
-            margin-bottom: 3px;
-        }
-        .report-subtitle {
-            font-size: 11px;
-            color: #666;
-        }
-        .fecha-reporte {
-            font-size: 9px;
-            color: #888;
-            margin-top: 5px;
-        }
-        /* Info Asegurado */
-        .asegurado-info {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-        }
-        .asegurado-nombre {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1e3a5f;
-            margin-bottom: 5px;
-        }
-        .asegurado-detalle {
-            font-size: 10px;
-            color: #64748b;
-        }
-        /* Resumen */
-        .resumen {
-            display: table;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .resumen-item {
-            display: table-cell;
-            text-align: center;
-            padding: 10px;
-            background: #f1f5f9;
-            border-right: 1px solid #e2e8f0;
-        }
-        .resumen-item:last-child {
-            border-right: none;
-        }
-        .resumen-valor {
-            font-size: 16px;
-            font-weight: bold;
-            color: #1e3a5f;
-        }
-        .resumen-label {
-            font-size: 9px;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-top: 3px;
-        }
-        .resumen-valor.verde { color: #16a34a; }
-        .resumen-valor.amarillo { color: #d97706; }
-        /* Póliza */
-        .poliza {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            page-break-inside: avoid;
-        }
-        .poliza-header {
-            background: #f8fafc;
-            padding: 10px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            display: table;
-            width: 100%;
-        }
-        .poliza-header-left {
-            display: table-cell;
-            width: 70%;
-        }
-        .poliza-header-right {
-            display: table-cell;
             width: 30%;
             text-align: right;
+            vertical-align: top;
         }
-        .poliza-numero {
-            font-size: 12px;
-            font-weight: bold;
-            color: #1e3a5f;
-        }
-        .poliza-compania {
-            font-size: 10px;
-            color: #64748b;
-        }
-        .poliza-prima {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1e3a5f;
-        }
-        .poliza-forma-pago {
-            font-size: 9px;
-            color: #64748b;
-        }
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
+        
+        .cliente-info {
             font-size: 8px;
             font-weight: bold;
-            text-transform: uppercase;
+            margin-bottom: 2px;
         }
-        .badge-activa { background: #dcfce7; color: #166534; }
-        .badge-vencida { background: #fee2e2; color: #991b1b; }
-        .badge-cancelada { background: #f3f4f6; color: #374151; }
-        .poliza-body {
-            padding: 10px 12px;
+        
+        .representante {
+            font-size: 7px;
+            margin-bottom: 2px;
         }
-        .poliza-unidad {
-            background: #f1f5f9;
-            padding: 6px 10px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            font-size: 10px;
-        }
-        .poliza-fechas {
-            font-size: 9px;
-            color: #64748b;
-            margin-bottom: 10px;
-        }
-        /* Tabla de Pagos */
-        .pagos-titulo {
-            font-size: 9px;
+        
+        .total-unidades {
+            font-size: 7px;
             font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 4px;
         }
-        .pagos-tabla {
+        
+        .logo {
+            max-height: 45px;
+            max-width: 120px;
+        }
+        
+        .report-title {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin: 5px 0;
+            text-transform: uppercase;
+        }
+        
+        /* Tabla Principal */
+        .tabla-reporte {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 6px;
         }
-        .pagos-tabla th {
-            text-align: left;
-            font-size: 8px;
+        
+        .tabla-reporte th {
+            background-color: #000;
+            color: #fff;
             font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            padding: 4px 6px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 3px 2px;
+            border: 1px solid #000;
+            text-align: center;
+            font-size: 6px;
+            line-height: 1.1;
         }
-        .pagos-tabla td {
-            padding: 5px 6px;
-            font-size: 9px;
-            border-bottom: 1px solid #f1f5f9;
+        
+        .tabla-reporte td {
+            border: 1px solid #000;
+            padding: 2px 2px;
+            vertical-align: middle;
+            font-size: 6px;
+            line-height: 1.1;
         }
-        .pago-pagado {
+        
+        .tabla-reporte tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Columnas específicas */
+        .col-v {
+            width: 2%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .col-asegurado {
+            width: 12%;
+            font-size: 6px;
+        }
+        
+        .col-fpago {
+            width: 7%;
+            text-align: center;
+        }
+        
+        .col-poliza {
+            width: 9%;
+            text-align: center;
+        }
+        
+        .col-vigencia {
+            width: 6%;
+            text-align: center;
+        }
+        
+        .col-unidad {
+            width: 16%;
+            font-size: 6px;
+        }
+        
+        .col-serie {
+            width: 11%;
+            font-size: 5px;
+        }
+        
+        .col-placas {
+            width: 6%;
+            text-align: center;
+        }
+        
+        .col-mod {
+            width: 4%;
+            text-align: center;
+        }
+        
+        .col-cob {
+            width: 5%;
+            text-align: center;
+        }
+        
+        .col-mes {
+            width: 2%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Estados */
+        .vigente {
             color: #16a34a;
+            font-weight: bold;
         }
-        .pago-pendiente {
-            color: #d97706;
+        
+        .vencida {
+            color: #dc2626;
+            font-weight: bold;
         }
-        .check-icon {
+        
+        .pago-v {
             color: #16a34a;
             font-weight: bold;
         }
-        .pending-icon {
+        
+        .pago-t {
             color: #d97706;
             font-weight: bold;
         }
+        
         /* Footer */
         .footer {
             position: fixed;
-            bottom: 20px;
-            left: 30px;
-            right: 30px;
-            font-size: 8px;
-            color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 10px;
-            text-align: center;
+            bottom: 10px;
+            left: 15px;
+            width: 100%;
         }
-        .page-number:after {
-            content: counter(page);
+        
+        .footer-content {
+            display: table;
+            width: 100%;
+        }
+        
+        .footer-left {
+            display: table-cell;
+            width: 20%;
+            vertical-align: middle;
+        }
+        
+        .footer-center {
+            display: table-cell;
+            width: 60%;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .footer-logo {
+            max-height: 40px;
+            max-width: 80px;
+        }
+        
+        .footer-info {
+            font-size: 7px;
+            line-height: 1.3;
+        }
+        
+        .footer-contacto {
+            font-size: 6px;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -235,134 +232,148 @@
     <div class="page">
         <!-- Header -->
         <div class="header">
-            <div class="header-left">
-                <div class="report-title">Reporte de Pólizas</div>
-                <div class="report-subtitle">
-                    @if($estatus === 'todas')
-                        Todas las pólizas
-                    @elseif($estatus === 'activas')
-                        Pólizas Activas
-                    @elseif($estatus === 'vencidas')
-                        Pólizas Vencidas
-                    @else
-                        Pólizas Canceladas
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="cliente-info">CLIENTE: {{ strtoupper($asegurado->nombre_completo) }}</div>
+                    <div class="representante">REPRESENTANTE: </div>
+                    <div class="total-unidades">TOTAL DE UNIDADES: {{ $totalPolizas }} UNIDADES</div>
+                </div>
+                <div class="header-right">
+                    @if(file_exists($logoPath))
+                        <img src="{{ $logoPath }}" alt="Logo" class="logo">
                     @endif
                 </div>
-                <div class="fecha-reporte">Generado el {{ $fechaReporte }}</div>
-            </div>
-            <div class="header-right">
-                <div style="font-size: 14px; font-weight: bold; color: #2563eb;">Rentería Seguros</div>
             </div>
         </div>
 
-        <!-- Info Asegurado -->
-        <div class="asegurado-info">
-            <div class="asegurado-nombre">{{ $asegurado->nombre_completo }}</div>
-            <div class="asegurado-detalle">
-                @if($asegurado->RFC)
-                    RFC: {{ $asegurado->RFC }} |
-                @endif
-                @if($asegurado->Telefono)
-                    Tel: {{ $asegurado->Telefono }} |
-                @endif
-                @if($asegurado->Email)
-                    {{ $asegurado->Email }}
-                @endif
-            </div>
-        </div>
+        <!-- Título -->
+        <div class="report-title">Reporte de Unidades Aseguradas</div>
 
-        <!-- Resumen -->
-        <div class="resumen">
-            <div class="resumen-item">
-                <div class="resumen-valor">{{ $totalPolizas }}</div>
-                <div class="resumen-label">Pólizas</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-valor">${{ number_format($totalPrima, 2) }}</div>
-                <div class="resumen-label">Prima Total</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-valor verde">${{ number_format($totalPagado, 2) }}</div>
-                <div class="resumen-label">Pagado</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-valor amarillo">${{ number_format($totalPendiente, 2) }}</div>
-                <div class="resumen-label">Pendiente</div>
-            </div>
-        </div>
-
-        <!-- Pólizas -->
-        @foreach($polizas as $poliza)
-            <div class="poliza">
-                <div class="poliza-header">
-                    <div class="poliza-header-left">
-                        <span class="poliza-numero">{{ $poliza->NumPoliza }}</span>
-                        <span class="badge badge-{{ strtolower($poliza->Estatus) }}">{{ $poliza->Estatus }}</span>
-                        <div class="poliza-compania">{{ $poliza->compania->Nombre ?? 'N/A' }} - {{ $poliza->compania->Cobertura ?? '' }}</div>
-                    </div>
-                    <div class="poliza-header-right">
-                        <div class="poliza-prima">${{ number_format($poliza->Prima, 2) }}</div>
-                        <div class="poliza-forma-pago">{{ $poliza->FormaPago }}</div>
-                    </div>
-                </div>
-                <div class="poliza-body">
-                    @if($poliza->unidad)
-                        <div class="poliza-unidad">
-                            <strong>Unidad:</strong> {{ $poliza->unidad->Marca }} {{ $poliza->unidad->Submarca }} {{ $poliza->unidad->Modelo }}
-                            @if($poliza->unidad->Placas)
-                                | Placas: {{ $poliza->unidad->Placas }}
+        <!-- Tabla Principal -->
+        <table class="tabla-reporte">
+            <thead>
+                <tr>
+                    <th class="col-v">V</th>
+                    <th class="col-asegurado">ASEGURADO</th>
+                    <th class="col-fpago">F.PAGO</th>
+                    <th class="col-poliza">No.POLIZA</th>
+                    <th class="col-vigencia">VIGENCIA</th>
+                    <th class="col-unidad">UNIDAD</th>
+                    <th class="col-serie">SERIE</th>
+                    <th class="col-placas">PLACAS DEL<br>VEHICULO</th>
+                    <th class="col-mod">MOD.</th>
+                    <th class="col-cob">COB.</th>
+                    <th class="col-mes">E</th>
+                    <th class="col-mes">F</th>
+                    <th class="col-mes">M</th>
+                    <th class="col-mes">A</th>
+                    <th class="col-mes">M</th>
+                    <th class="col-mes">J</th>
+                    <th class="col-mes">JL</th>
+                    <th class="col-mes">A</th>
+                    <th class="col-mes">S</th>
+                    <th class="col-mes">O</th>
+                    <th class="col-mes">N</th>
+                    <th class="col-mes">D</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($polizas as $poliza)
+                <tr>
+                    <!-- V (Vigencia) -->
+                    <td class="col-v">
+                        @if($poliza->Estatus === 'Activa')
+                            <span class="vigente">V</span>
+                        @elseif($poliza->Estatus === 'Vencida')
+                            <span class="vencida">X</span>
+                        @else
+                            -
+                        @endif
+                    </td>
+                    
+                    <!-- Asegurado -->
+                    <td class="col-asegurado">{{ strtoupper($asegurado->nombre_completo) }}</td>
+                    
+                    <!-- Forma de Pago -->
+                    <td class="col-fpago">{{ strtoupper($poliza->FormaPago) }}</td>
+                    
+                    <!-- Número de Póliza -->
+                    <td class="col-poliza">{{ $poliza->NumPoliza }}</td>
+                    
+                    <!-- Vigencia -->
+                    <td class="col-vigencia">
+                        {{ $poliza->FechaVencimiento?->format('d-M-y') }}
+                    </td>
+                    
+                    <!-- Unidad -->
+                    <td class="col-unidad">
+                        @if($poliza->unidad)
+                            {{ strtoupper($poliza->unidad->Marca) }} 
+                            {{ strtoupper($poliza->unidad->Submarca) }}
+                            @if($poliza->unidad->Modelo)
+                                {{ strtoupper(substr($poliza->unidad->Modelo, 0, 20)) }}
                             @endif
-                        </div>
-                    @endif
-
-                    <div class="poliza-fechas">
-                        <strong>Vigencia:</strong> {{ $poliza->FechaInicio?->format('d/m/Y') }} al {{ $poliza->FechaVencimiento?->format('d/m/Y') }}
-                    </div>
-
-                    @if($poliza->fechasCobranza->count() > 0)
-                        <div class="pagos-titulo">Calendario de Pagos</div>
-                        <table class="pagos-tabla">
-                            <thead>
-                                <tr>
-                                    <th style="width: 15%;">#</th>
-                                    <th style="width: 30%;">Fecha</th>
-                                    <th style="width: 25%;">Monto</th>
-                                    <th style="width: 30%;">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($poliza->fechasCobranza as $index => $pago)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $pago->FechaCobranza?->format('d/m/Y') }}</td>
-                                        <td>${{ number_format($pago->MontoCobro, 2) }}</td>
-                                        <td>
-                                            @if($pago->Estatus === 'Pagado')
-                                                <span class="pago-pagado">
-                                                    <span class="check-icon">&#10003;</span> Pagado
-                                                    @if($pago->FechaPago)
-                                                        ({{ $pago->FechaPago->format('d/m/Y') }})
-                                                    @endif
-                                                </span>
-                                            @else
-                                                <span class="pago-pendiente">
-                                                    <span class="pending-icon">&#9711;</span> Pendiente
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
-            </div>
-        @endforeach
+                        @else
+                            N/A
+                        @endif
+                    </td>
+                    
+                    <!-- Serie (VIN) -->
+                    <td class="col-serie">
+                        {{ $poliza->unidad->VIN ?? 'N/A' }}
+                    </td>
+                    
+                    <!-- Placas -->
+                    <td class="col-placas">
+                        {{ $poliza->unidad->Placas ?? 'N/A' }}
+                    </td>
+                    
+                    <!-- Modelo (Año) -->
+                    <td class="col-mod">
+                        {{ $poliza->unidad->Anio ?? '' }}
+                    </td>
+                    
+                    <!-- Cobertura -->
+                    <td class="col-cob">
+                        {{ strtoupper(substr($poliza->compania->Cobertura ?? 'N/A', 0, 6)) }}
+                    </td>
+                    
+                    <!-- Meses (E F M A M J JL A S O N D) -->
+                    @foreach(['E', 'F', 'M', 'A', 'MY', 'J', 'JL', 'AG', 'S', 'O', 'N', 'D'] as $mes)
+                        <td class="col-mes">
+                            @if($poliza->mesesPago[$mes] === 'V')
+                                <span class="pago-v">V</span>
+                            @elseif($poliza->mesesPago[$mes] === 'T')
+                                <span class="pago-t">T</span>
+                            @else
+                                
+                            @endif
+                        </td>
+                    @endforeach
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-        Documento generado automáticamente por Sistema de Seguros | {{ $fechaReporte }} | Página <span class="page-number"></span>
+        <div class="footer-content">
+            <div class="footer-left">
+                @if(file_exists($logoPath))
+                    <img src="{{ $logoPath }}" alt="Logo" class="footer-logo">
+                @endif
+            </div>
+            <div class="footer-center">
+                <div class="footer-info">
+                    <strong>Rubén Rentería Méndez</strong><br>
+                    T: (442) 183 22 50 | C: (442) 438 12 88
+                </div>
+                <div class="footer-contacto">
+                    WhatsApp: (442) 773 78 75
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

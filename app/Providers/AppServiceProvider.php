@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -18,10 +19,10 @@ class AppServiceProvider extends ServiceProvider
      * Bootstrap any application services.
      */
     public function boot()
-{
-    // Detecta si la app corre en Railway o producción
-    if (config('app.env') === 'production') {
-        URL::forceScheme('https');
+    {
+        // Detecta si la app corre en Railway o producción
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
-}
 }

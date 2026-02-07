@@ -226,7 +226,7 @@
                                 <tr>
                                     <th class="px-6 py-4">Prioridad</th>
                                     <th class="px-6 py-4">Cliente</th>
-                                    <th class="px-6 py-4 hidden md:table-cell">Teléfono</th>
+                                    <th class="px-6 py-4 hidden md:table-cell">Contacto</th>
                                     <th class="px-6 py-4 hidden lg:table-cell">Compañía</th>
                                     <th class="px-6 py-4">Fecha</th>
                                     <th class="px-6 py-4">Monto</th>
@@ -261,8 +261,14 @@
                                         </td>
                                         <td class="px-6 py-4 hidden md:table-cell">
                                             @if($poliza->asegurado?->Telefono)
-                                                <a href="tel:{{ $poliza->asegurado->Telefono }}" class="text-blue-600 hover:underline text-sm">
+                                                <a href="tel:{{ $poliza->asegurado->Telefono }}" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                                                    <span class="material-icons-round text-xs">phone</span>
                                                     {{ $poliza->asegurado->Telefono }}
+                                                </a>
+                                            @elseif($poliza->asegurado?->Email)
+                                                <a href="mailto:{{ $poliza->asegurado->Email }}" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                                                    <span class="material-icons-round text-xs">email</span>
+                                                    {{ Str::limit($poliza->asegurado->Email, 20) }}
                                                 </a>
                                             @else
                                                 <span class="text-slate-400">-</span>
@@ -291,6 +297,118 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Paginador Cobranzas --}}
+                    @if($this->polizasProximasCobrar->hasPages())
+                        <div class="p-4 bg-slate-50/50 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <p class="text-xs text-slate-500 font-medium">
+                                Mostrando {{ $this->polizasProximasCobrar->firstItem() }}-{{ $this->polizasProximasCobrar->lastItem() }} de {{ $this->polizasProximasCobrar->total() }} registros
+                            </p>
+
+                            <div class="flex items-center gap-1">
+                                {{-- Ir al inicio --}}
+                                @if($this->polizasProximasCobrar->currentPage() > 1)
+                                    <button wire:click="gotoPage(1, 'cobrarPage')"
+                                            class="p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors"
+                                            title="Primera página">
+                                        <span class="material-icons-round text-lg">first_page</span>
+                                    </button>
+                                @else
+                                    <span class="p-1.5 border border-slate-100 rounded-lg text-slate-300 cursor-not-allowed">
+                                        <span class="material-icons-round text-lg">first_page</span>
+                                    </span>
+                                @endif
+
+                                {{-- Anterior --}}
+                                @if(!$this->polizasProximasCobrar->onFirstPage())
+                                    <button wire:click="previousPage('cobrarPage')"
+                                            class="p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors"
+                                            title="Anterior">
+                                        <span class="material-icons-round text-lg">chevron_left</span>
+                                    </button>
+                                @else
+                                    <span class="p-1.5 border border-slate-100 rounded-lg text-slate-300 cursor-not-allowed">
+                                        <span class="material-icons-round text-lg">chevron_left</span>
+                                    </span>
+                                @endif
+
+                                {{-- Números de página --}}
+                                @php
+                                    $currentPageCobrar = $this->polizasProximasCobrar->currentPage();
+                                    $lastPageCobrar = $this->polizasProximasCobrar->lastPage();
+                                    $startCobrar = max(1, $currentPageCobrar - 2);
+                                    $endCobrar = min($lastPageCobrar, $currentPageCobrar + 2);
+
+                                    if ($endCobrar - $startCobrar < 4) {
+                                        if ($startCobrar == 1) {
+                                            $endCobrar = min($lastPageCobrar, $startCobrar + 4);
+                                        } else {
+                                            $startCobrar = max(1, $endCobrar - 4);
+                                        }
+                                    }
+                                @endphp
+
+                                @if($startCobrar > 1)
+                                    <button wire:click="gotoPage(1, 'cobrarPage')"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold text-slate-600 hover:bg-white border border-slate-200 transition-colors">
+                                        1
+                                    </button>
+                                    @if($startCobrar > 2)
+                                        <span class="px-1 text-slate-400 text-xs">...</span>
+                                    @endif
+                                @endif
+
+                                @for($i = $startCobrar; $i <= $endCobrar; $i++)
+                                    @if($i == $currentPageCobrar)
+                                        <span class="w-8 h-8 flex items-center justify-center bg-amber-600 text-white rounded-lg text-xs font-bold">
+                                            {{ $i }}
+                                        </span>
+                                    @else
+                                        <button wire:click="gotoPage({{ $i }}, 'cobrarPage')"
+                                                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold text-slate-600 hover:bg-white border border-slate-200 transition-colors">
+                                            {{ $i }}
+                                        </button>
+                                    @endif
+                                @endfor
+
+                                @if($endCobrar < $lastPageCobrar)
+                                    @if($endCobrar < $lastPageCobrar - 1)
+                                        <span class="px-1 text-slate-400 text-xs">...</span>
+                                    @endif
+                                    <button wire:click="gotoPage({{ $lastPageCobrar }}, 'cobrarPage')"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold text-slate-600 hover:bg-white border border-slate-200 transition-colors">
+                                        {{ $lastPageCobrar }}
+                                    </button>
+                                @endif
+
+                                {{-- Siguiente --}}
+                                @if($this->polizasProximasCobrar->hasMorePages())
+                                    <button wire:click="nextPage('cobrarPage')"
+                                            class="p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors"
+                                            title="Siguiente">
+                                        <span class="material-icons-round text-lg">chevron_right</span>
+                                    </button>
+                                @else
+                                    <span class="p-1.5 border border-slate-100 rounded-lg text-slate-300 cursor-not-allowed">
+                                        <span class="material-icons-round text-lg">chevron_right</span>
+                                    </span>
+                                @endif
+
+                                {{-- Ir al final --}}
+                                @if($currentPageCobrar < $lastPageCobrar)
+                                    <button wire:click="gotoPage({{ $lastPageCobrar }}, 'cobrarPage')"
+                                            class="p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors"
+                                            title="Última página">
+                                        <span class="material-icons-round text-lg">last_page</span>
+                                    </button>
+                                @else
+                                    <span class="p-1.5 border border-slate-100 rounded-lg text-slate-300 cursor-not-allowed">
+                                        <span class="material-icons-round text-lg">last_page</span>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 @else
                     <div class="flex-1 flex items-center justify-center p-12">
                         <div class="text-center">
@@ -311,7 +429,7 @@
                                 <tr>
                                     <th class="px-6 py-4">Prioridad</th>
                                     <th class="px-6 py-4">Cliente</th>
-                                    <th class="px-6 py-4 hidden md:table-cell">Teléfono</th>
+                                    <th class="px-6 py-4 hidden md:table-cell">Contacto</th>
                                     <th class="px-6 py-4 hidden lg:table-cell">Vehículo</th>
                                     <th class="px-6 py-4">Vence</th>
                                     <th class="px-6 py-4">Prima</th>
@@ -346,8 +464,14 @@
                                         </td>
                                         <td class="px-6 py-4 hidden md:table-cell">
                                             @if($poliza->asegurado?->Telefono)
-                                                <a href="tel:{{ $poliza->asegurado->Telefono }}" class="text-blue-600 hover:underline text-sm">
+                                                <a href="tel:{{ $poliza->asegurado->Telefono }}" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                                                    <span class="material-icons-round text-xs">phone</span>
                                                     {{ $poliza->asegurado->Telefono }}
+                                                </a>
+                                            @elseif($poliza->asegurado?->Email)
+                                                <a href="mailto:{{ $poliza->asegurado->Email }}" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                                                    <span class="material-icons-round text-xs">email</span>
+                                                    {{ Str::limit($poliza->asegurado->Email, 20) }}
                                                 </a>
                                             @else
                                                 <span class="text-slate-400">-</span>

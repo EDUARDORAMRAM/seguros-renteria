@@ -57,37 +57,44 @@ class Dashboard extends Component
     }
 
     // ═══════════════════════════════════════════════════════════
-    // CORREGIDO: Obtener FECHAS DE COBRANZA próximas (no pólizas)
+    // CORREGIDO: Obtener FECHAS DE COBRANZA próximas con paginación
+    // Ordenadas por fecha de cobranza (más urgentes primero)
     // ═══════════════════════════════════════════════════════════
     public function getPolizasProximasCobrarProperty()
-{
-    // Obtener las fechas de cobranza próximas (7 días)
-    $fechasCobranza = FechaCobranza::with([
-        'poliza.asegurado', 
-        'poliza.compania', 
-        'poliza.unidad'
-    ])
-    ->proximas(7)
-    ->get();
+    {
+        // Obtener IDs únicos de pólizas con su fecha de cobranza más próxima
+        $subquery = FechaCobranza::proximas(7)
+            ->select('IdPoliza', DB::raw('MIN(FechaCobranza) as fecha_minima'))
+            ->groupBy('IdPoliza');
 
-    // Agrupar por póliza para evitar duplicados en la tabla
-    return $fechasCobranza->groupBy('IdPoliza')->map(function ($grupo) {
-        $fechaMasProxima = $grupo->sortBy('FechaCobranza')->first();
-        $poliza = $fechaMasProxima->poliza;
-        
-        // ═══════════════════════════════════════════════════════════
-        // CRÍTICO: Calcular días manualmente para evitar conflicto con accessor
-        // ═══════════════════════════════════════════════════════════
-        $diasRestantes = (int) now()->diffInDays($fechaMasProxima->FechaCobranza, false);
-        
-        // Agregar datos de la cobranza a la póliza
-        $poliza->proxima_fecha_cobranza = $fechaMasProxima->FechaCobranza;
-        $poliza->proximo_monto_cobro = $fechaMasProxima->MontoCobro;
-        $poliza->dias_para_cobrar_real = $diasRestantes; // ← NOMBRE DIFERENTE
-        
-        return $poliza;
-    })->values();
-}
+        // Paginar las pólizas ordenadas por la fecha de cobranza más próxima
+        $polizasPaginadas = Poliza::with(['asegurado', 'compania', 'unidad'])
+            ->joinSub($subquery, 'cobranzas', function ($join) {
+                $join->on('polizas.IdPoliza', '=', 'cobranzas.IdPoliza');
+            })
+            ->orderBy('cobranzas.fecha_minima', 'asc')
+            ->select('polizas.*')
+            ->paginate(10, ['*'], 'cobrarPage');
+
+        // Agregar datos de cobranza a cada póliza
+        $polizasPaginadas->getCollection()->transform(function ($poliza) {
+            $fechaMasProxima = FechaCobranza::where('IdPoliza', $poliza->IdPoliza)
+                ->proximas(7)
+                ->orderBy('FechaCobranza', 'asc')
+                ->first();
+
+            if ($fechaMasProxima) {
+                $diasRestantes = (int) now()->diffInDays($fechaMasProxima->FechaCobranza, false);
+                $poliza->proxima_fecha_cobranza = $fechaMasProxima->FechaCobranza;
+                $poliza->proximo_monto_cobro = $fechaMasProxima->MontoCobro;
+                $poliza->dias_para_cobrar_real = $diasRestantes;
+            }
+
+            return $poliza;
+        });
+
+        return $polizasPaginadas;
+    }
 
     public function getPolizasRecientesProperty()
     {

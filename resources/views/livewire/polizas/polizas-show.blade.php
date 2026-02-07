@@ -43,14 +43,41 @@
                         Editar
                     </a>
                     @if ($poliza->Estatus === 'Activa')
-                        <button onclick="confirmarRenovacion()"
-                            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Renovar
-                        </button>
+                        @php
+                            $pagosPendientes = $poliza->fechasCobranza->where('Estatus', 'Pendiente')->count();
+                            $totalPagos = $poliza->fechasCobranza->count();
+                            $pagosPagados = $poliza->fechasCobranza->where('Estatus', 'Pagado')->count();
+                        @endphp
+
+                        @if($pagosPendientes > 0)
+                            {{-- Botón deshabilitado con tooltip --}}
+                            <div class="relative group">
+                                <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white font-medium rounded-lg cursor-not-allowed opacity-75">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m0 0v2m0-2h2m-2 0H9m3-10V4m0 0V2m0 2h2m-2 0H9" />
+                                    </svg>
+                                    Renovar ({{ $pagosPagados }}/{{ $totalPagos }})
+                                </button>
+                                {{-- Tooltip --}}
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Faltan {{ $pagosPendientes }} pago(s) por completar
+                                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                            </div>
+                        @else
+                            {{-- Botón habilitado --}}
+                            <button wire:click="renovar"
+                                wire:confirm="¿Deseas renovar esta póliza por un año más? Se generarán nuevas fechas de cobranza."
+                                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Renovar
+                            </button>
+                        @endif
                     @endif
                     @if ($poliza->Estatus === 'Cancelada')
                         <button wire:click="eliminarPoliza"
@@ -165,31 +192,34 @@
                             @endif
 
                             <div class="space-y-3">
-                                @foreach($poliza->fechasCobranza as $index => $fechaCobro)
+                                @foreach($poliza->fechasCobranza->sortBy(fn($f) => $f->FechaCobranza->timestamp) as $fechaCobro)
                                     @php
                                         $diasRestantes = $fechaCobro->dias_para_cobrar;
-                                        $esCritico = $fechaCobro->Estatus === 'Pendiente' && $diasRestantes !== null && $diasRestantes <= 1;
+                                        $esVencido = $fechaCobro->Estatus === 'Pendiente' && $diasRestantes !== null && $diasRestantes < 0;
+                                        $esCritico = $fechaCobro->Estatus === 'Pendiente' && $diasRestantes !== null && $diasRestantes >= 0 && $diasRestantes <= 1;
                                         $esUrgente = $fechaCobro->Estatus === 'Pendiente' && $diasRestantes !== null && $diasRestantes <= 3 && $diasRestantes > 1;
                                         $esProximo = $fechaCobro->Estatus === 'Pendiente' && $diasRestantes !== null && $diasRestantes <= 7 && $diasRestantes > 3;
                                     @endphp
 
                                     <div class="flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200
-                                        {{ $fechaCobro->Estatus === 'Pagado' ? 'bg-green-50 border-green-300' : 
-                                           ($esCritico ? 'bg-red-50 border-red-300 shadow-lg' : 
-                                           ($esUrgente ? 'bg-orange-50 border-orange-300' : 
-                                           ($esProximo ? 'bg-yellow-50 border-yellow-300' : 
-                                           'bg-white border-gray-300'))) }}">
+                                        {{ $fechaCobro->Estatus === 'Pagado' ? 'bg-green-50 border-green-300' :
+                                           ($esVencido ? 'bg-red-100 border-red-400 shadow-lg' :
+                                           ($esCritico ? 'bg-red-50 border-red-300 shadow-lg' :
+                                           ($esUrgente ? 'bg-orange-50 border-orange-300' :
+                                           ($esProximo ? 'bg-yellow-50 border-yellow-300' :
+                                           'bg-white border-gray-300')))) }}">
                                         
                                         <div class="flex items-center space-x-4 flex-1">
                                             {{-- Número de pago --}}
                                             <div class="flex-shrink-0">
                                                 <div class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-md
-                                                    {{ $fechaCobro->Estatus === 'Pagado' ? 'bg-green-500 text-white' : 
-                                                       ($esCritico ? 'bg-red-500 text-white animate-pulse' : 
-                                                       ($esUrgente ? 'bg-orange-500 text-white' : 
-                                                       ($esProximo ? 'bg-yellow-500 text-white' : 
-                                                       'bg-blue-500 text-white'))) }}">
-                                                    {{ $index + 1 }}
+                                                    {{ $fechaCobro->Estatus === 'Pagado' ? 'bg-green-500 text-white' :
+                                                       ($esVencido ? 'bg-red-600 text-white animate-pulse' :
+                                                       ($esCritico ? 'bg-red-500 text-white animate-pulse' :
+                                                       ($esUrgente ? 'bg-orange-500 text-white' :
+                                                       ($esProximo ? 'bg-yellow-500 text-white' :
+                                                       'bg-blue-500 text-white')))) }}">
+                                                    {{ $loop->iteration }}
                                                 </div>
                                             </div>
 
@@ -207,6 +237,10 @@
                                                             </svg>
                                                             PAGADO
                                                         </span>
+                                                    @elseif($esVencido)
+                                                        <span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">
+                                                            ⚠️ VENCIDO ({{ abs($diasRestantes) }} {{ abs($diasRestantes) == 1 ? 'día' : 'días' }})
+                                                        </span>
                                                     @elseif($esCritico)
                                                         <span class="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
                                                             🔴 {{ $diasRestantes === 0 ? '¡HOY!' : '¡MAÑANA!' }}
@@ -219,13 +253,9 @@
                                                         <span class="px-3 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full">
                                                             🟡 En {{ $diasRestantes }} días
                                                         </span>
-                                                    @elseif($fechaCobro->esta_vencida)
-                                                        <span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
-                                                            ⚠️ VENCIDO ({{ abs($diasRestantes) }} días)
-                                                        </span>
                                                     @else
                                                         <span class="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
-                                                            Pendiente
+                                                            En {{ $diasRestantes }} días
                                                         </span>
                                                     @endif
                                                 </div>
@@ -608,10 +638,3 @@
     </div>
 </div>
 
-<script>
-    function confirmarRenovacion() {
-        if (confirm('¿Deseas renovar esta póliza por un año más?')) {
-            Livewire.dispatch('renovar-poliza');
-        }
-    }
-</script>

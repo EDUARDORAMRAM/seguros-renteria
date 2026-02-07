@@ -30,6 +30,11 @@ class PolizasEdit extends Component
     public $montoSegundoPago = 0;
     public $mostrarSeccionMontos = false;
 
+    // Para control de cambio de forma de pago
+    public $formaPagoAnterior;
+    public $mostrarAlertaCambioFormaPago = false;
+    public $nuevaFormaPago;
+
     // Para PDF
     public $archivoPdf;
     public $pdfActual;
@@ -80,6 +85,9 @@ class PolizasEdit extends Component
         $this->poliza = $poliza;
         $this->cargarPoliza();
         $this->cargarDatos();
+
+        // Guardar forma de pago original para detectar cambios
+        $this->formaPagoAnterior = $this->FormaPago;
     }
 
     public function cargarDatos()
@@ -124,31 +132,153 @@ class PolizasEdit extends Component
     }
 
     // ═══════════════════════════════════════════════════════════
-    // ACTUALIZADO: Calcular fechas con Trimestral
+    // Detectar cambio de forma de pago y mostrar alerta
     // ═══════════════════════════════════════════════════════════
     public function updatedFormaPago($value)
     {
-        if ($this->FechaInicio) {
-            $fechaInicio = \Carbon\Carbon::parse($this->FechaInicio);
-            $this->FechaVencimiento = match($value) {
-                'Anual' => $fechaInicio->copy()->addYear()->format('Y-m-d'),
-                'Semestral' => $fechaInicio->copy()->addMonths(6)->format('Y-m-d'),
-                'Trimestral' => $fechaInicio->copy()->addMonths(3)->format('Y-m-d'), // ← NUEVO
-                'Mensual' => $fechaInicio->copy()->addMonth()->format('Y-m-d'),
-                default => $fechaInicio->copy()->addYear()->format('Y-m-d'),
-            };
-            
-            // ← NUEVO: Calcular Fecha de Cobranza igual al vencimiento
-            $this->FechaCobranza = $this->FechaVencimiento;
+        // Si hay fechas de cobranza existentes, mostrar alerta de confirmación
+        if ($this->poliza->fechasCobranza()->count() > 0 && $value !== $this->formaPagoAnterior) {
+            $this->nuevaFormaPago = $value;
+            $this->mostrarAlertaCambioFormaPago = true;
+            // Revertir temporalmente al valor anterior
+            $this->FormaPago = $this->formaPagoAnterior;
+        } else {
+            // No hay fechas existentes, aplicar cambio directamente
+            $this->aplicarCambioFormaPago($value);
         }
     }
 
     // ═══════════════════════════════════════════════════════════
-    // NUEVO: Cuando cambie FechaInicio, recalcular ambas fechas
+    // Confirmar cambio de forma de pago (elimina fechas y regenera)
+    // ═══════════════════════════════════════════════════════════
+    public function confirmarCambioFormaPago()
+    {
+        $this->FormaPago = $this->nuevaFormaPago;
+        $this->formaPagoAnterior = $this->nuevaFormaPago;
+        $this->mostrarAlertaCambioFormaPago = false;
+
+        // Aplicar el cambio
+        $this->aplicarCambioFormaPago($this->FormaPago);
+
+        // Actualizar la póliza con la nueva forma de pago
+        $this->poliza->FormaPago = $this->FormaPago;
+        $this->poliza->FechaCobranza = $this->FechaCobranza;
+        $this->poliza->save();
+
+        // Regenerar fechas de cobranza con la nueva forma de pago
+        $this->poliza->generarFechasCobranza();
+        $this->poliza->refresh();
+
+        // Recargar montos (serán 0 porque se regeneraron)
+        $this->cargarMontosCobranza();
+        $this->Prima = 0;
+
+        session()->flash('message', 'Forma de pago actualizada. Se han regenerado las fechas de cobranza. Por favor, configure los nuevos montos.');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Cancelar cambio de forma de pago
+    // ═══════════════════════════════════════════════════════════
+    public function cancelarCambioFormaPago()
+    {
+        $this->mostrarAlertaCambioFormaPago = false;
+        $this->nuevaFormaPago = null;
+        // FormaPago ya está en el valor anterior
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Aplicar cambio de forma de pago (recalcular fechas)
+    // ═══════════════════════════════════════════════════════════
+    private function aplicarCambioFormaPago($value)
+    {
+        if ($this->FechaInicio) {
+            $fechaInicio = \Carbon\Carbon::parse($this->FechaInicio);
+            // La fecha de vencimiento siempre es 1 año
+            $this->FechaVencimiento = $fechaInicio->copy()->addYear()->format('Y-m-d');
+
+            // Primera fecha de cobranza es según el intervalo de pago
+            $mesesIntervalo = match($value) {
+                'Mensual' => 1,
+                'Trimestral' => 3,
+                'Semestral' => 6,
+                'Anual' => 12,
+                default => 12,
+            };
+            $this->FechaCobranza = $fechaInicio->copy()->addMonths($mesesIntervalo)->format('Y-m-d');
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Cuando cambie FechaInicio, recalcular fechas
     // ═══════════════════════════════════════════════════════════
     public function updatedFechaInicio($value)
     {
-        $this->updatedFormaPago($this->FormaPago);
+        $this->aplicarCambioFormaPago($this->FormaPago);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Cuando cambie FechaCobranza, regenerar fechas de pago
+    // ═══════════════════════════════════════════════════════════
+    public function updatedFechaCobranza($value)
+    {
+        // Solo regenerar si hay valor válido
+        if ($value && $this->FechaInicio) {
+            // Actualizar en la póliza
+            $this->poliza->FechaCobranza = $value;
+            $this->poliza->save();
+
+            // Regenerar las fechas de cobranza basándose en la nueva fecha
+            $this->regenerarFechasDesdeCobranza();
+
+            session()->flash('message', 'Fechas de cobranza actualizadas según la nueva fecha. Por favor, revise los montos.');
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Regenerar fechas de cobranza desde la fecha de cobranza editada
+    // ═══════════════════════════════════════════════════════════
+    public function regenerarFechasDesdeCobranza()
+    {
+        // Eliminar fechas anteriores
+        $this->poliza->fechasCobranza()->delete();
+
+        $fechaCobranza = \Carbon\Carbon::parse($this->FechaCobranza);
+        $fechaVencimiento = \Carbon\Carbon::parse($this->FechaVencimiento);
+
+        // Calcular intervalo según forma de pago
+        $mesesIntervalo = match($this->FormaPago) {
+            'Mensual' => 1,
+            'Trimestral' => 3,
+            'Semestral' => 6,
+            'Anual' => 12,
+            default => 12,
+        };
+
+        // Calcular número de pagos
+        $numPagos = match($this->FormaPago) {
+            'Mensual' => 12,
+            'Trimestral' => 4,
+            'Semestral' => 2,
+            'Anual' => 1,
+            default => 1,
+        };
+
+        // Generar fechas comenzando desde la fecha de cobranza
+        $fechaActual = $fechaCobranza->copy();
+
+        for ($i = 0; $i < $numPagos; $i++) {
+            $this->poliza->fechasCobranza()->create([
+                'FechaCobranza' => $fechaActual->format('Y-m-d'),
+                'MontoCobro' => 0,
+                'Estatus' => 'Pendiente',
+            ]);
+
+            $fechaActual->addMonths($mesesIntervalo);
+        }
+
+        // Recargar la póliza y los montos
+        $this->poliza->refresh();
+        $this->cargarMontosCobranza();
     }
 
     // ═══════════════════════════════════════════════════════════

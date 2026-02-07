@@ -9,7 +9,7 @@
                         Modifica la información de la póliza {{ $NumPoliza }}
                     </p>
                 </div>
-                <a href="{{ route('polizas.index') }}" 
+                <a href="{{ route('polizas.show', $poliza->IdPoliza) }}"
                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition">
                     ← Volver
                 </a>
@@ -119,20 +119,20 @@
                             </p>
                         </div>
 
-                        {{-- NUEVO: Fecha de Cobranza --}}
+                        {{-- Fecha de Cobranza (Editable) --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Fecha de Cobranza
+                                Fecha de Primera Cobranza <span class="text-red-500">*</span>
                             </label>
-                            <input type="date" 
-                                   wire:model="FechaCobranza" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-gray-50"
-                                   readonly>
-                            @error('FechaCobranza') 
+                            <input type="date"
+                                   wire:model.live="FechaCobranza"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                   min="{{ $FechaInicio }}">
+                            @error('FechaCobranza')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             <p class="mt-1 text-xs text-gray-500">
-                                💰 Recordatorio de cobro automático
+                                💰 Al modificar esta fecha, se recalcularán todas las fechas de pago
                             </p>
                         </div>
 
@@ -482,7 +482,7 @@
 
                 {{-- Botones de Acción --}}
                 <div class="flex items-center justify-end gap-4 pt-6 border-t">
-                    <a href="{{ route('polizas.show', $poliza->IdPoliza) }}" 
+                    <a href="{{ route('polizas.show', $poliza->IdPoliza) }}"
                        class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">
                         Cancelar
                     </a>
@@ -520,5 +520,82 @@
                 <span class="text-gray-900 font-medium">Actualizando...</span>
             </div>
         </div>
+
+        {{-- Modal de Confirmación para Cambio de Forma de Pago --}}
+        @if($mostrarAlertaCambioFormaPago)
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                {{-- Header --}}
+                <div class="bg-orange-500 px-6 py-4">
+                    <div class="flex items-center">
+                        <svg class="w-8 h-8 text-white mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <h3 class="text-xl font-bold text-white">Cambio de Forma de Pago</h3>
+                    </div>
+                </div>
+
+                {{-- Body --}}
+                <div class="px-6 py-4">
+                    <p class="text-gray-700 mb-4">
+                        Estás cambiando la forma de pago de <strong class="text-gray-900">{{ $formaPagoAnterior }}</strong> a <strong class="text-orange-600">{{ $nuevaFormaPago }}</strong>.
+                    </p>
+
+                    <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-4">
+                        <div class="flex">
+                            <svg class="w-5 h-5 text-orange-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-orange-800">Esta acción eliminará:</p>
+                                <ul class="mt-2 text-sm text-orange-700 list-disc list-inside space-y-1">
+                                    <li>Todas las fechas de cobranza actuales</li>
+                                    <li>Los montos de pago configurados</li>
+                                    <li>El historial de pagos pendientes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-gray-600">
+                        Se generarán nuevas fechas de cobranza según la nueva forma de pago:
+                        <strong class="text-gray-900">
+                            @switch($nuevaFormaPago)
+                                @case('Mensual')
+                                    12 pagos mensuales
+                                    @break
+                                @case('Trimestral')
+                                    4 pagos trimestrales
+                                    @break
+                                @case('Semestral')
+                                    2 pagos semestrales
+                                    @break
+                                @case('Anual')
+                                    1 pago anual
+                                    @break
+                            @endswitch
+                        </strong>
+                    </p>
+                </div>
+
+                {{-- Footer --}}
+                <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                    <button type="button"
+                            wire:click="cancelarCambioFormaPago"
+                            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button type="button"
+                            wire:click="confirmarCambioFormaPago"
+                            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Confirmar Cambio
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </div>

@@ -10,9 +10,7 @@ class PolizasShow extends Component
 {
     public Poliza $poliza;
 
-    protected $listeners = [
-        'renovar-poliza' => 'renovar'
-    ];
+    protected $listeners = [];
 
     public function mount(Poliza $poliza)
     {
@@ -115,13 +113,75 @@ class PolizasShow extends Component
         }
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // Verificar si todos los pagos están completados
+    // ═══════════════════════════════════════════════════════════
+    public function tienePagosPendientes()
+    {
+        return $this->poliza->fechasCobranza()
+            ->where('Estatus', 'Pendiente')
+            ->count() > 0;
+    }
+
+    public function contarPagosPendientes()
+    {
+        return $this->poliza->fechasCobranza()
+            ->where('Estatus', 'Pendiente')
+            ->count();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Renovar póliza (solo si todos los pagos están completados)
+    // ═══════════════════════════════════════════════════════════
     public function renovar()
     {
-        $nuevaFechaVencimiento = $this->poliza->FechaVencimiento->addYear();
-        $this->poliza->renovar($nuevaFechaVencimiento);
-        
-        $this->cargarPoliza();
-        session()->flash('message', 'Póliza renovada exitosamente.');
+        // Verificar que todos los pagos estén completados
+        $pagosPendientes = $this->contarPagosPendientes();
+
+        if ($pagosPendientes > 0) {
+            session()->flash('error', "No se puede renovar la póliza. Hay {$pagosPendientes} pago(s) pendiente(s). Todos los pagos deben estar completados antes de renovar.");
+            return;
+        }
+
+        try {
+            // Calcular nuevas fechas (un año más desde la fecha de vencimiento actual)
+            $nuevaFechaInicio = $this->poliza->FechaVencimiento->copy();
+            $nuevaFechaVencimiento = $nuevaFechaInicio->copy()->addYear();
+
+            // Calcular primera fecha de cobranza según forma de pago
+            $mesesIntervalo = match($this->poliza->FormaPago) {
+                'Mensual' => 1,
+                'Trimestral' => 3,
+                'Semestral' => 6,
+                'Anual' => 12,
+                default => 12,
+            };
+            $nuevaFechaCobranza = $nuevaFechaInicio->copy()->addMonths($mesesIntervalo);
+
+            // Actualizar la póliza
+            $this->poliza->FechaInicio = $nuevaFechaInicio;
+            $this->poliza->FechaVencimiento = $nuevaFechaVencimiento;
+            $this->poliza->FechaCobranza = $nuevaFechaCobranza;
+            $this->poliza->Estatus = 'Activa';
+            $this->poliza->Prima = 0; // Se recalculará con los nuevos montos
+            $this->poliza->save();
+
+            // Eliminar las fechas de cobranza anteriores (ya pagadas)
+            $this->poliza->fechasCobranza()->delete();
+
+            // Generar nuevas fechas de cobranza para el nuevo período
+            $this->poliza->generarFechasCobranza();
+
+            // Recargar la póliza
+            $this->cargarPoliza();
+
+            session()->flash('message', '✅ Póliza renovada exitosamente. Nuevo período: ' .
+                $nuevaFechaInicio->format('d/m/Y') . ' - ' . $nuevaFechaVencimiento->format('d/m/Y') .
+                '. Por favor, configure los montos de las nuevas cobranzas.');
+
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al renovar la póliza: ' . $e->getMessage());
+        }
     }
 
     public function cancelar()
