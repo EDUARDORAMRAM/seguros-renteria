@@ -155,22 +155,25 @@ class ImportarExcel extends Component
 
                 $partes = $this->dividirNombreCompleto($nombreCompleto);
 
-                if (Asegurado::where('RFC', $rfc)->exists()) {
-                    throw new \Exception("RFC duplicado: {$rfc}");
+                $aseguradoExistente = Asegurado::where('RFC', $rfc)->first();
+
+                if ($aseguradoExistente) {
+                    // Ya existe: solo mapear el ID sin modificar el registro
+                    $mapa_ids[$idExcel] = $aseguradoExistente->IdAsegurado;
+                } else {
+                    $asegurado = Asegurado::create([
+                        'Nombre' => $partes['nombre'],
+                        'ApellidoPaterno' => $partes['apellido_paterno'],
+                        'ApellidoMaterno' => $partes['apellido_materno'],
+                        'RFC' => $rfc,
+                        'Telefono' => $telefono ?: null,
+                        'Email' => $email ?: null,
+                        'Referencia' => null,
+                    ]);
+
+                    $mapa_ids[$idExcel] = $asegurado->IdAsegurado;
+                    $importados++;
                 }
-
-                $asegurado = Asegurado::create([
-                    'Nombre' => $partes['nombre'],
-                    'ApellidoPaterno' => $partes['apellido_paterno'],
-                    'ApellidoMaterno' => $partes['apellido_materno'],
-                    'RFC' => $rfc,
-                    'Telefono' => $telefono ?: null,
-                    'Email' => $email ?: null,
-                    'Referencia' => null,
-                ]);
-
-                $mapa_ids[$idExcel] = $asegurado->IdAsegurado;
-                $importados++;
                 
             } catch (\Exception $e) {
                 $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
@@ -215,23 +218,26 @@ class ImportarExcel extends Component
 
                 $placas = $this->generarPlacas();
 
-                if (Unidad::where('VIN', $vin)->exists()) {
-                    throw new \Exception("VIN duplicado: {$vin}");
+                $unidadExistente = Unidad::where('VIN', $vin)->first();
+
+                if ($unidadExistente) {
+                    // Ya existe: solo mapear el ID sin modificar el registro
+                    $mapa_ids[$idExcel] = $unidadExistente->IdUnidad;
+                } else {
+                    $unidad = Unidad::create([
+                        'VIN' => $vin,
+                        'Marca' => $marca,
+                        'Submarca' => $submarca,
+                        'Anio' => $anio,
+                        'Motor' => $motor,
+                        'Placas' => $placas,
+                        'Color' => 'POR DEFINIR',
+                        'Uso' => 'Particular',
+                    ]);
+
+                    $mapa_ids[$idExcel] = $unidad->IdUnidad;
+                    $importados++;
                 }
-
-                $unidad = Unidad::create([
-                    'VIN' => $vin,
-                    'Marca' => $marca,
-                    'Submarca' => $submarca,
-                    'Anio' => $anio,
-                    'Motor' => $motor,
-                    'Placas' => $placas,
-                    'Color' => 'POR DEFINIR',
-                    'Uso' => 'Particular',
-                ]);
-
-                $mapa_ids[$idExcel] = $unidad->IdUnidad;
-                $importados++;
                 
             } catch (\Exception $e) {
                 $errores[] = "Línea {$lineNumber}: " . $e->getMessage();
@@ -298,7 +304,8 @@ class ImportarExcel extends Component
                 }
 
                 if (Poliza::where('NumPoliza', $numPoliza)->exists()) {
-                    throw new \Exception("NumPoliza duplicada: {$numPoliza}");
+                    // Póliza ya existe, saltar sin error
+                    continue;
                 }
 
                 $poliza = Poliza::create([
