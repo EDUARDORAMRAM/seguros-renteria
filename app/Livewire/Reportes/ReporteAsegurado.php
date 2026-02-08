@@ -57,7 +57,7 @@ class ReporteAsegurado extends Component
             $query->where('Estatus', 'Cancelada');
         }
 
-        $this->polizasPreview = $query->orderByRaw('LENGTH(NumPoliza) ASC, NumPoliza ASC')->get();
+        $this->polizasPreview = $query->orderByRaw("SUBSTRING_INDEX(NumPoliza, '-', 1) ASC, CAST(SUBSTRING_INDEX(NumPoliza, '-', -1) AS UNSIGNED) ASC")->get();
     }
 
     public function getAseguradosProperty()

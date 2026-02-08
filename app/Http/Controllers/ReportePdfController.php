@@ -24,7 +24,7 @@ class ReportePdfController extends Controller
             $query->where('Estatus', 'Cancelada');
         }
 
-        $polizas = $query->orderByRaw('LENGTH(NumPoliza) ASC, NumPoliza ASC')->get();
+        $polizas = $query->orderByRaw("SUBSTRING_INDEX(NumPoliza, '-', 1) ASC, CAST(SUBSTRING_INDEX(NumPoliza, '-', -1) AS UNSIGNED) ASC")->get();
 
         // Calcular totales
         $totalPrima = $polizas->sum('Prima');
