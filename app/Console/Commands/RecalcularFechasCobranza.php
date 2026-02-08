@@ -38,18 +38,10 @@ class RecalcularFechasCobranza extends Command
                     $poliza->FormaPago
                 );
 
-                // Verificar si las fechas ya son correctas
                 $fechasActualesArray = $fechasActuales->pluck('FechaCobranza')
                     ->map(fn($f) => \Carbon\Carbon::parse($f)->format('Y-m-d'))
                     ->toArray();
 
-                if ($fechasActualesArray === $nuevasFechas) {
-                    $sinCambios++;
-                    continue;
-                }
-
-                // Guardar info de pagos ya realizados
-                $pagosRealizados = $fechasActuales->where('Estatus', 'Pagado')->count();
                 $montosPrevios = $fechasActuales->pluck('MontoCobro')->toArray();
 
                 // Calcular monto por pago (usar el más común de los existentes)
