@@ -63,18 +63,19 @@ class RecalcularFechasCobranza extends Command
                 // Eliminar fechas anteriores
                 $poliza->fechasCobranza()->delete();
 
-                $hoy = now()->startOfDay();
+                $limiteAutoPagado = now()->startOfDay()->subDays(7);
 
                 // Crear nuevas fechas
                 foreach ($nuevasFechas as $index => $fecha) {
                     $fechaCarbon = \Carbon\Carbon::parse($fecha);
 
-                    // Determinar estatus: si la fecha ya pasó Y había pagos realizados, marcar como pagado
+                    // Determinar estatus: si la fecha es anterior a hace 7 días, marcar como pagado
+                    // Las fechas de la última semana quedan pendientes para gestión manual
                     $estatus = 'Pendiente';
                     $fechaPago = null;
                     $observaciones = null;
 
-                    if ($fechaCarbon->lt($hoy) && $index < $pagosRealizados) {
+                    if ($fechaCarbon->lt($limiteAutoPagado)) {
                         $estatus = 'Pagado';
                         $fechaPago = $fechaCarbon;
                         $observaciones = 'Pago anterior (recálculo de fechas)';
