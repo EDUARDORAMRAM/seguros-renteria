@@ -57,7 +57,7 @@ class ReporteAsegurado extends Component
             $query->where('Estatus', 'Cancelada');
         }
 
-        $this->polizasPreview = $query->orderBy('FechaVencimiento', 'desc')->get();
+        $this->polizasPreview = $query->orderByRaw('LENGTH(NumPoliza) ASC, NumPoliza ASC')->get();
     }
 
     public function getAseguradosProperty()

@@ -196,8 +196,8 @@ class PolizasEdit extends Component
             // La fecha de vencimiento siempre es 1 año
             $this->FechaVencimiento = $fechaInicio->copy()->addYear()->format('Y-m-d');
 
-            // Primera fecha de cobranza: 1 mes después del inicio
-            $this->FechaCobranza = $fechaInicio->copy()->addMonth()->format('Y-m-d');
+            // Primera fecha de cobranza: mismo día del inicio de la póliza
+            $this->FechaCobranza = $fechaInicio->copy()->format('Y-m-d');
         }
     }
 

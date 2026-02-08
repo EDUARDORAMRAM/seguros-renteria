@@ -24,7 +24,7 @@ class ReportePdfController extends Controller
             $query->where('Estatus', 'Cancelada');
         }
 
-        $polizas = $query->orderBy('FechaVencimiento', 'desc')->get();
+        $polizas = $query->orderByRaw('LENGTH(NumPoliza) ASC, NumPoliza ASC')->get();
 
         // Calcular totales
         $totalPrima = $polizas->sum('Prima');
@@ -72,12 +72,12 @@ class ReportePdfController extends Controller
                 }
             }
 
-            // Marcar el mes de vencimiento con V
-            if ($poliza->FechaVencimiento) {
-                $mesVencimiento = $poliza->FechaVencimiento->month;
-                $letraVenc = $mesMap[$mesVencimiento] ?? '';
-                if ($letraVenc) {
-                    $meses[$letraVenc] = 'V';
+            // Marcar el mes de inicio de la póliza con V (vencimiento)
+            if ($poliza->FechaInicio) {
+                $mesInicio = $poliza->FechaInicio->month;
+                $letraInicio = $mesMap[$mesInicio] ?? '';
+                if ($letraInicio) {
+                    $meses[$letraInicio] = 'V';
                 }
             }
 

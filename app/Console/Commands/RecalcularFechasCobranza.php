@@ -9,12 +9,12 @@ use Illuminate\Console\Command;
 class RecalcularFechasCobranza extends Command
 {
     protected $signature = 'polizas:recalcular-cobranzas';
-    protected $description = 'Recalcula las fechas de cobranza para que el primer pago sea 1 mes después del inicio';
+    protected $description = 'Recalcula las fechas de cobranza para que el primer pago sea el mismo día del inicio';
 
     public function handle()
     {
         $this->info('Iniciando recálculo de fechas de cobranza...');
-        $this->info('Nueva lógica: primer pago = FechaInicio + 1 mes, siguientes = intervalo normal');
+        $this->info('Nueva lógica: primer pago = mismo día de FechaInicio, siguientes = intervalo normal');
         $this->newLine();
 
         $polizas = Poliza::with('fechasCobranza')->get();

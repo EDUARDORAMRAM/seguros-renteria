@@ -148,8 +148,8 @@ class PolizasShow extends Component
             $nuevaFechaInicio = $this->poliza->FechaVencimiento->copy();
             $nuevaFechaVencimiento = $nuevaFechaInicio->copy()->addYear();
 
-            // Primera fecha de cobranza: 1 mes después del inicio
-            $nuevaFechaCobranza = $nuevaFechaInicio->copy()->addMonth();
+            // Primera fecha de cobranza: mismo día del inicio de la póliza
+            $nuevaFechaCobranza = $nuevaFechaInicio->copy();
 
             // Actualizar la póliza
             $this->poliza->FechaInicio = $nuevaFechaInicio;
