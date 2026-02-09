@@ -20,37 +20,58 @@
         <form wire:submit.prevent="guardar">
             <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
                 
+                {{-- Tipo de Persona --}}
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
+                        Tipo de Persona
+                    </h3>
+                    <div class="flex gap-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" wire:model.live="TipoPersona" value="Física" class="form-radio text-green-600">
+                            <span class="ml-2 text-sm text-gray-700">Persona Física</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" wire:model.live="TipoPersona" value="Moral" class="form-radio text-green-600">
+                            <span class="ml-2 text-sm text-gray-700">Persona Moral</span>
+                        </label>
+                    </div>
+                    @error('TipoPersona')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Información Personal --}}
                 <div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
-                        👤 Información Personal
+                        {{ $TipoPersona === 'Moral' ? 'Datos de la Empresa' : 'Información Personal' }}
                     </h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {{-- Nombre --}}
+                        {{-- Nombre / Razón Social --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Nombre(s) <span class="text-red-500">*</span>
+                                {{ $TipoPersona === 'Moral' ? 'Razón Social' : 'Nombre(s)' }} <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
-                                   wire:model="Nombre" 
+                            <input type="text"
+                                   wire:model="Nombre"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                   placeholder="Juan">
-                            @error('Nombre') 
+                                   placeholder="{{ $TipoPersona === 'Moral' ? 'Empresa S.A. de C.V.' : 'Juan' }}">
+                            @error('Nombre')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
+                        @if($TipoPersona === 'Física')
                         {{-- Apellido Paterno --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Apellido Paterno <span class="text-red-500">*</span>
+                                Apellido Paterno
                             </label>
-                            <input type="text" 
-                                   wire:model="ApellidoPaterno" 
+                            <input type="text"
+                                   wire:model="ApellidoPaterno"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                    placeholder="Pérez">
-                            @error('ApellidoPaterno') 
+                            @error('ApellidoPaterno')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -60,14 +81,15 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Apellido Materno
                             </label>
-                            <input type="text" 
-                                   wire:model="ApellidoMaterno" 
+                            <input type="text"
+                                   wire:model="ApellidoMaterno"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                    placeholder="García">
-                            @error('ApellidoMaterno') 
+                            @error('ApellidoMaterno')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        @endif
                     </div>
                 </div>
 
@@ -81,7 +103,7 @@
                         {{-- Teléfono --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Teléfono <span class="text-red-500">*</span>
+                                Teléfono
                             </label>
                             <input type="tel" 
                                    wire:model="Telefono" 
@@ -95,7 +117,7 @@
                         {{-- Email --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Email <span class="text-red-500">*</span>
+                                Email
                             </label>
                             <input type="email" 
                                    wire:model="Email" 

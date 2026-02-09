@@ -13,6 +13,7 @@ class Asegurado extends Model
     protected $primaryKey = 'IdAsegurado';
 
     protected $fillable = [
+        'TipoPersona',
         'Nombre',
         'ApellidoPaterno',
         'ApellidoMaterno',

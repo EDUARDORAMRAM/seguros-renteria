@@ -15,8 +15,8 @@
 
         {{-- Logo --}}
         <div class="p-5 border-b border-gray-100">
-            <a href="{{ route('dashboard') }}" class="block">
-                <img src="{{ asset('images/logoColor.png') }}" alt="Logo" class="h-10 w-auto">
+            <a href="{{ route('dashboard') }}" class="flex justify-center">
+                <img src="{{ asset('images/logoColor.png') }}" alt="Logo" class="h-14 w-auto">
             </a>
             <button type="button"
                     data-drawer-hide="drawer-navigation"

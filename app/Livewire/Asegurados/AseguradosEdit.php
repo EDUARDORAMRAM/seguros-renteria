@@ -8,6 +8,7 @@ use Livewire\Component;
 class AseguradosEdit extends Component
 {
     public Asegurado $asegurado;
+    public $TipoPersona = 'Física';
     public $Nombre;
     public $ApellidoPaterno;
     public $ApellidoMaterno;
@@ -17,20 +18,18 @@ class AseguradosEdit extends Component
     public $Referencia;
 
     protected $rules = [
+        'TipoPersona' => 'required|in:Física,Moral',
         'Nombre' => 'required|string|max:255',
-        'ApellidoPaterno' => 'required|string|max:255',
+        'ApellidoPaterno' => 'nullable|string|max:255',
         'ApellidoMaterno' => 'nullable|string|max:255',
-        'Telefono' => 'required|string|max:20',
-        'Email' => 'required|email|max:255',
+        'Telefono' => 'nullable|string|max:20',
+        'Email' => 'nullable|email|max:255',
         'RFC' => 'required|string|max:13',
         'Referencia' => 'nullable|string|max:255',
     ];
 
     protected $messages = [
-        'Nombre.required' => 'El nombre es obligatorio',
-        'ApellidoPaterno.required' => 'El apellido paterno es obligatorio',
-        'Telefono.required' => 'El teléfono es obligatorio',
-        'Email.required' => 'El email es obligatorio',
+        'Nombre.required' => 'El nombre o razón social es obligatorio',
         'Email.email' => 'Ingresa un email válido',
         'RFC.required' => 'El RFC es obligatorio',
     ];
@@ -42,7 +41,8 @@ class AseguradosEdit extends Component
     }
 
     public function cargarAsegurado()
-    {   
+    {
+        $this->TipoPersona = $this->asegurado->TipoPersona ?? 'Física';
         $this->Nombre = $this->asegurado->Nombre;
         $this->ApellidoPaterno = $this->asegurado->ApellidoPaterno;
         $this->ApellidoMaterno = $this->asegurado->ApellidoMaterno;
@@ -54,17 +54,15 @@ class AseguradosEdit extends Component
 
     public function actualizar()
     {
-        // Modificar las reglas para permitir el RFC y Email actuales
         $rules = $this->rules;
         $rules['RFC'] = 'required|string|max:13|unique:asegurados,RFC,' . $this->asegurado->IdAsegurado . ',IdAsegurado';
-        $rules['Email'] = 'required|email|max:255|unique:asegurados,Email,' . $this->asegurado->IdAsegurado . ',IdAsegurado';
 
         $validated = $this->validate($rules);
 
         $this->asegurado->update($validated);
 
         session()->flash('message', 'Asegurado actualizado exitosamente.');
-        
+
         return redirect()->route('asegurados.index');
     }
 

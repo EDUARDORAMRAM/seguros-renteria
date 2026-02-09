@@ -111,6 +111,9 @@ class PolizasCreate extends Component
 
     public function updatedFechaInicio($value)
     {
+        if ($value) {
+            $this->FechaVencimiento = \Carbon\Carbon::parse($value)->addYear()->format('Y-m-d');
+        }
         $this->validarYCalcularFechas();
     }
 
