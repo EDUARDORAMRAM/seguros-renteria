@@ -53,31 +53,31 @@ class ReportePdfController extends Controller
                 7 => 'JL', 8 => 'AG', 9 => 'S', 10 => 'O', 11 => 'N', 12 => 'D'
             ];
 
-            // Letra según forma de pago: M=Mensual, T=Trimestral, S=Semestral, A=Anual
-            $letraFormaPago = match($poliza->FormaPago) {
-                'Mensual' => 'M',
-                'Trimestral' => 'T',
-                'Semestral' => 'S',
-                'Anual' => 'A',
-                default => 'A',
-            };
+            // Para Anual: solo V en el mes de vencimiento, sin letra de pago
+            // Para los demás: letras de pago (M, T, S) + V en mes de vencimiento
+            if ($poliza->FormaPago !== 'Anual') {
+                $letraFormaPago = match($poliza->FormaPago) {
+                    'Mensual' => 'M',
+                    'Trimestral' => 'T',
+                    'Semestral' => 'S',
+                    default => 'M',
+                };
 
-            // Marcar meses de pago con la letra de la forma de pago
-            foreach ($poliza->fechasCobranza as $pago) {
-                $mes = $pago->FechaCobranza->month;
-                $letra = $mesMap[$mes] ?? '';
-
-                if ($letra) {
-                    $meses[$letra] = $letraFormaPago;
+                foreach ($poliza->fechasCobranza as $pago) {
+                    $mes = $pago->FechaCobranza->month;
+                    $letra = $mesMap[$mes] ?? '';
+                    if ($letra) {
+                        $meses[$letra] = $letraFormaPago;
+                    }
                 }
             }
 
-            // Marcar el mes de inicio de la póliza con V (vencimiento)
-            if ($poliza->FechaInicio) {
-                $mesInicio = $poliza->FechaInicio->month;
-                $letraInicio = $mesMap[$mesInicio] ?? '';
-                if ($letraInicio) {
-                    $meses[$letraInicio] = 'V';
+            // V en el mes de vencimiento (siempre, para todas las formas de pago)
+            if ($poliza->FechaVencimiento) {
+                $mesVenc = $poliza->FechaVencimiento->month;
+                $letraVenc = $mesMap[$mesVenc] ?? '';
+                if ($letraVenc) {
+                    $meses[$letraVenc] = 'V';
                 }
             }
 
